@@ -29,22 +29,7 @@ androidComponents {
 
     onVariants(selector().all()) { variant ->
         // -------------------------------------------------------------------------
-        // 1. Sentry Token
-        // -------------------------------------------------------------------------
-        String sentryToken = "null"
-        try {
-            File tokenFile = file("${rootDir}/.sentry_token")
-            if (tokenFile.exists()) {
-                sentryToken = '"' + tokenFile.text.trim() + '"'
-                println("(Added Sentry token from file)")
-            }
-        } catch (Exception ignored) { }
-
-        variant.buildConfigFields.put("SENTRY_TOKEN",
-                new BuildConfigField("String", sentryToken, "Sentry Token"))
-
-        // -------------------------------------------------------------------------
-        // 2. Crash Reporting & Telemetry
+        // 1. Crash Reporting & Telemetry
         // -------------------------------------------------------------------------
         boolean crashReporting = project.hasProperty("crashReportEnabled") && project.property("crashReportEnabled") == "true"
         variant.buildConfigFields.put("CRASH_REPORTING_ENABLED",
@@ -55,7 +40,7 @@ androidComponents {
                 new BuildConfigField("boolean", telemetry.toString(), "Telemetry"))
 
         // -------------------------------------------------------------------------
-        // 3. Official Build Flag
+        // 2. Official Build Flag
         // -------------------------------------------------------------------------
         boolean official = project.hasProperty("official") || gradle.hasProperty("localProperties.official")
         variant.buildConfigFields.put("MOZILLA_OFFICIAL",
@@ -270,7 +255,6 @@ dependencies {
     implementation libs.mozilla.feature.webnotifications
 
     implementation libs.mozilla.lib.crash.base
-    implementation libs.mozilla.lib.crash.sentry
     implementation libs.mozilla.lib.dataprotect
     implementation libs.mozilla.lib.publicsuffixlist
     implementation libs.mozilla.lib.push.firebase
