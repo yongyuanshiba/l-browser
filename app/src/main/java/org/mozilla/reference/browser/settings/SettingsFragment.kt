@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.Preference.OnPreferenceClickListener
@@ -21,8 +22,12 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import kotlin.system.exitProcess
 import mozilla.components.support.ktx.android.view.showKeyboard
+import org.mozilla.reference.browser.DnsSettings
+import org.mozilla.reference.browser.EngineProvider
 import org.mozilla.reference.browser.R
 import org.mozilla.reference.browser.R.string.pref_key_about_page
+import org.mozilla.reference.browser.R.string.pref_key_dns_mode
+import org.mozilla.reference.browser.R.string.pref_key_dns_status
 import org.mozilla.reference.browser.R.string.pref_key_make_default_browser
 import org.mozilla.reference.browser.R.string.pref_key_override_amo_collection
 import org.mozilla.reference.browser.R.string.pref_key_privacy
@@ -64,6 +69,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val privacyKey = requireContext().getPreferenceKey(pref_key_privacy)
         val customAddonsKey = requireContext().getPreferenceKey(pref_key_override_amo_collection)
         val autofillPreferenceKey = requireContext().getPreferenceKey(R.string.pref_key_autofill)
+        val dnsModeKey = requireContext().getPreferenceKey(pref_key_dns_mode)
+        val dnsStatusKey = requireContext().getPreferenceKey(pref_key_dns_status)
 
         val preferenceMakeDefaultBrowser = findPreference<Preference>(makeDefaultBrowserKey)
         val preferenceRemoteDebugging = findPreference<SwitchPreferenceCompat>(remoteDebuggingKey)
@@ -71,6 +78,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val preferencePrivacy = findPreference<Preference>(privacyKey)
         val preferenceCustomAddons = findPreference<Preference>(customAddonsKey)
         val preferenceAutofill = findPreference<AutofillPreference>(autofillPreferenceKey)
+        val preferenceDnsMode = findPreference<ListPreference>(dnsModeKey)
+        val preferenceDnsStatus = findPreference<Preference>(dnsStatusKey)
 
         if (!AutofillPreference.isSupported(requireContext())) {
             preferenceAutofill?.isVisible = false
@@ -80,6 +89,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         preferenceMakeDefaultBrowser?.onPreferenceClickListener = getClickListenerForMakeDefaultBrowser()
         preferenceRemoteDebugging?.onPreferenceChangeListener = getChangeListenerForRemoteDebugging()
+        preferenceDnsMode?.onPreferenceChangeListener = getChangeListenerForDnsMode(preferenceDnsMode, preferenceDnsStatus)
+        updateDnsPreferences(preferenceDnsMode, preferenceDnsStatus, DnsSettings.currentMode(requireContext()))
         preferenceAboutPage?.onPreferenceClickListener = getAboutPageListener()
         preferencePrivacy?.onPreferenceClickListener = getClickListenerForPrivacy()
         preferenceCustomAddons?.onPreferenceClickListener = getClickListenerForCustomAddons()
@@ -108,6 +119,38 @@ class SettingsFragment : PreferenceFragmentCompat() {
             requireComponents.core.engine.settings.remoteDebuggingEnabled = newValue as Boolean
             true
         }
+
+    private fun getChangeListenerForDnsMode(
+        preferenceDnsMode: ListPreference?,
+        preferenceDnsStatus: Preference?,
+    ): OnPreferenceChangeListener =
+        OnPreferenceChangeListener { _, newValue ->
+            val mode = newValue as String
+            EngineProvider.reapplyDnsSettings(requireContext(), mode)
+            updateDnsPreferences(preferenceDnsMode, preferenceDnsStatus, mode)
+            true
+        }
+
+    /** Shows the chosen entry and the status line matching [mode] under the DNS resolution preference. */
+    private fun updateDnsPreferences(
+        preferenceDnsMode: ListPreference?,
+        preferenceDnsStatus: Preference?,
+        mode: String,
+    ) {
+        if (preferenceDnsMode != null) {
+            val index = preferenceDnsMode.findIndexOfValue(mode)
+            if (index >= 0) {
+                preferenceDnsMode.summary = preferenceDnsMode.entries[index]
+            }
+        }
+        preferenceDnsStatus?.summary = getString(
+            if (DnsSettings.isSystemMode(mode)) {
+                R.string.preferences_dns_status_system
+            } else {
+                R.string.preferences_dns_status_browser_default
+            },
+        )
+    }
 
     private fun getAboutPageListener(): OnPreferenceClickListener = OnPreferenceClickListener {
         parentFragmentManager.beginTransaction().replace(R.id.container, AboutFragment()).addToBackStack(null).commit()

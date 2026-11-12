@@ -44,6 +44,22 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="@string/dns_category">
+
+        <androidx.preference.ListPreference
+            android:key="@string/pref_key_dns_mode"
+            android:defaultValue="system"
+            android:entries="@array/pref_dns_mode_entries"
+            android:entryValues="@array/pref_dns_mode_values"
+            android:title="@string/preferences_dns_mode"/>
+
+        <androidx.preference.Preference
+            android:key="@string/pref_key_dns_status"
+            android:selectable="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/mozilla_category">
 
         <androidx.preference.Preference

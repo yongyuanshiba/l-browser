@@ -96,6 +96,34 @@
     <!-- Preference category for Mozilla about/legal etc. -->
     <string name="mozilla_category">Mozilla</string>
 
+    <!-- Preference category for DNS settings -->
+    <string name="dns_category">DNS 设置</string>
+
+    <!-- Preference for choosing how DNS names are resolved -->
+    <string name="preferences_dns_mode">解析方式</string>
+
+    <!-- DNS resolution option: always use the system resolver, browser DNS-over-HTTPS stays off -->
+    <string name="preferences_dns_mode_system">强制系统解析</string>
+
+    <!-- DNS resolution option: leave resolution to the browser engine's own defaults -->
+    <string name="preferences_dns_mode_browser_default">浏览器默认</string>
+
+    <!-- Status line shown under the DNS resolution choice while system DNS is in effect -->
+    <string name="preferences_dns_status_system">当前生效：强制系统解析。浏览器不使用 DNS-over-HTTPS，域名解析走系统解析器，系统的私人 DNS（DNS-over-TLS）配置生效。</string>
+
+    <!-- Status line shown under the DNS resolution choice while browser defaults are in effect -->
+    <string name="preferences_dns_status_browser_default">当前生效：浏览器默认。由浏览器引擎自行决定解析方式；若配置了 DNS-over-HTTPS，可能会被使用。</string>
+
+    <string-array name="pref_dns_mode_entries">
+        <item>@string/preferences_dns_mode_system</item>
+        <item>@string/preferences_dns_mode_browser_default</item>
+    </string-array>
+
+    <string-array name="pref_dns_mode_values">
+        <item>system</item>
+        <item>browser_default</item>
+    </string-array>
+
     <!-- Preference category for tracking protection -->
     <string name="tracker_category">Tracking Protection</string>
 
