@@ -163,7 +163,6 @@ mozilla-feature-webcompat = { group = "org.mozilla.components", name = "feature-
 mozilla-feature-webnotifications = { group = "org.mozilla.components", name = "feature-webnotifications", version.ref = "android-components" }
 
 mozilla-lib-crash-base = { group = "org.mozilla.components", name = "lib-crash", version.ref = "android-components" }
-mozilla-lib-crash-sentry = { group = "org.mozilla.components", name = "lib-crash-sentry", version.ref = "android-components" }
 mozilla-lib-dataprotect = { group = "org.mozilla.components", name = "lib-dataprotect", version.ref = "android-components" }
 mozilla-lib-publicsuffixlist = { group = "org.mozilla.components", name = "lib-publicsuffixlist", version.ref = "android-components" }
 mozilla-lib-push-firebase = { group = "org.mozilla.components", name = "lib-push-firebase", version.ref = "android-components" }
