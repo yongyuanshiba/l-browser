@@ -16,8 +16,10 @@ import org.mozilla.reference.browser.R
 class Analytics(private val context: Context) {
     /**
      * A crash reporter that only records crashes locally (listed in about:crashes).
-     * No crash services are attached, so reports are never sent to Socorro, Sentry
-     * or any other external endpoint.
+     * The only attached service is [LocalCrashReporterService], which writes records to
+     * app-private storage on this device; reports are never sent to Socorro, Sentry or
+     * any other external endpoint. lib-crash rejects an empty service list, so the local
+     * service is required for the reporter to run at all.
      */
     val crashReporter: CrashReporter by lazy {
         val flags =
@@ -29,7 +31,7 @@ class Analytics(private val context: Context) {
 
         CrashReporter(
             context = context,
-            services = emptyList(),
+            services = listOf(LocalCrashReporterService(context)),
             telemetryServices = emptyList(),
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             promptConfiguration =
