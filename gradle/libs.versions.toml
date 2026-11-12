@@ -1,6 +1,6 @@
 [versions]
 # Android Components
-android-components = "162.0.20261112010410"
+android-components = "160.0"
 
 # AGP
 android-gradle-plugin = "9.5.1"
