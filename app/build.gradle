@@ -85,7 +85,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "org.mozilla.reference.browser"
+        applicationId "com.jasmine.li"
         buildToolsVersion Config.buildToolsVersion
         compileSdk {
             version = release(Config.compileSdkMajorVersion) {

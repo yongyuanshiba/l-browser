@@ -151,7 +151,7 @@ open class BrowserApplication : Application() {
     }
 
     companion object {
-        const val NON_FATAL_CRASH_BROADCAST = "org.mozilla.reference.browser"
+        const val NON_FATAL_CRASH_BROADCAST = "com.jasmine.li"
     }
 }
 
