@@ -45,7 +45,6 @@ import org.mozilla.reference.browser.addons.AddonsActivity
 import org.mozilla.reference.browser.ext.components
 import org.mozilla.reference.browser.ext.share
 import org.mozilla.reference.browser.settings.SettingsActivity
-import org.mozilla.reference.browser.tabs.synced.SyncedTabsActivity
 
 /**
  * Wires the browser toolbar to the selected tab, or to the tab given by [sessionId]: URL loading and search,
@@ -158,11 +157,6 @@ class ToolbarIntegration(
             listOf(
                 TextMenuCandidate(text = "Add-ons") {
                     val intent = Intent(context, AddonsActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    context.startActivity(intent)
-                },
-                TextMenuCandidate(text = "Synced Tabs") {
-                    val intent = Intent(context, SyncedTabsActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 },
