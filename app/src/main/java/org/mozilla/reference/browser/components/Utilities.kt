@@ -50,7 +50,7 @@ class Utilities(
      */
     val intentProcessors by lazy {
         externalIntentProcessors +
-            TabIntentProcessor(store, tabsUseCases, searchUseCases.newTabSearch, applicationScope = applicationScope)
+            TabIntentProcessor(tabsUseCases, searchUseCases.newTabSearch, applicationScope = applicationScope)
     }
 
     val publicSuffixList by lazy {
