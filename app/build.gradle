@@ -224,11 +224,8 @@ dependencies {
     implementation libs.mozilla.concept.menu
     implementation libs.mozilla.concept.push
     implementation libs.mozilla.concept.storage
-    implementation libs.mozilla.concept.sync
     implementation libs.mozilla.concept.toolbar
 
-    implementation libs.mozilla.feature.accounts.base
-    implementation libs.mozilla.feature.accounts.push
     implementation libs.mozilla.feature.addons
     implementation libs.mozilla.feature.app.links
     implementation libs.mozilla.feature.awesomebar
@@ -247,7 +244,6 @@ dependencies {
     implementation libs.mozilla.feature.search
     implementation libs.mozilla.feature.session
     implementation libs.mozilla.feature.sitepermissions
-    implementation libs.mozilla.feature.syncedtabs
     implementation libs.mozilla.feature.tabs
     implementation libs.mozilla.feature.toolbar
     implementation libs.mozilla.feature.webauthn
@@ -260,7 +256,6 @@ dependencies {
     implementation libs.mozilla.lib.push.firebase
     implementation libs.mozilla.lib.state
 
-    implementation libs.mozilla.service.firefox.accounts
     implementation libs.mozilla.service.location
     implementation libs.mozilla.service.merino.manifest
     implementation libs.mozilla.service.sync.logins

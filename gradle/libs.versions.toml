@@ -132,11 +132,8 @@ mozilla-concept-fetch = { group = "org.mozilla.components", name = "concept-fetc
 mozilla-concept-menu = { group = "org.mozilla.components", name = "concept-menu", version.ref = "android-components" }
 mozilla-concept-push = { group = "org.mozilla.components", name = "concept-push", version.ref = "android-components" }
 mozilla-concept-storage = { group = "org.mozilla.components", name = "concept-storage", version.ref = "android-components" }
-mozilla-concept-sync = { group = "org.mozilla.components", name = "concept-sync", version.ref = "android-components" }
 mozilla-concept-toolbar = { group = "org.mozilla.components", name = "concept-toolbar", version.ref = "android-components" }
 
-mozilla-feature-accounts-base = { group = "org.mozilla.components", name = "feature-accounts", version.ref = "android-components" }
-mozilla-feature-accounts-push = { group = "org.mozilla.components", name = "feature-accounts-push", version.ref = "android-components" }
 mozilla-feature-addons = { group = "org.mozilla.components", name = "feature-addons", version.ref = "android-components" }
 mozilla-feature-app-links = { group = "org.mozilla.components", name = "feature-app-links", version.ref = "android-components" }
 mozilla-feature-autofill = { group = "org.mozilla.components", name = "feature-autofill", version.ref = "android-components" }
@@ -155,7 +152,6 @@ mozilla-feature-readerview = { group = "org.mozilla.components", name = "feature
 mozilla-feature-search = { group = "org.mozilla.components", name = "feature-search", version.ref = "android-components" }
 mozilla-feature-session = { group = "org.mozilla.components", name = "feature-session", version.ref = "android-components" }
 mozilla-feature-sitepermissions = { group = "org.mozilla.components", name = "feature-sitepermissions", version.ref = "android-components" }
-mozilla-feature-syncedtabs = { group = "org.mozilla.components", name = "feature-syncedtabs", version.ref = "android-components" }
 mozilla-feature-tabs = { group = "org.mozilla.components", name = "feature-tabs", version.ref = "android-components" }
 mozilla-feature-toolbar = { group = "org.mozilla.components", name = "feature-toolbar", version.ref = "android-components" }
 mozilla-feature-webauthn = { group = "org.mozilla.components", name = "feature-webauthn", version.ref = "android-components" }
@@ -168,7 +164,6 @@ mozilla-lib-publicsuffixlist = { group = "org.mozilla.components", name = "lib-p
 mozilla-lib-push-firebase = { group = "org.mozilla.components", name = "lib-push-firebase", version.ref = "android-components" }
 mozilla-lib-state = { group = "org.mozilla.components", name = "lib-state", version.ref = "android-components" }
 
-mozilla-service-firefox-accounts = { group = "org.mozilla.components", name = "service-firefox-accounts", version.ref = "android-components" }
 mozilla-service-location = { group = "org.mozilla.components", name = "service-location", version.ref = "android-components" }
 mozilla-service-merino-manifest = { group = "org.mozilla.components", name = "service-merino-manifest", version.ref = "android-components" }
 mozilla-service-sync-logins = { group = "org.mozilla.components", name = "service-sync-logins", version.ref = "android-components" }
