@@ -23,7 +23,6 @@ import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.R as addonsR
 import mozilla.components.feature.addons.ui.AddonInstallationDialogFragment
 import mozilla.components.feature.addons.ui.PermissionsDialogFragment
-import mozilla.components.feature.addons.ui.PermissionsDialogMode
 import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.support.base.feature.LifecycleAwareFeature
 import mozilla.components.support.ktx.android.content.appVersionName
@@ -122,7 +121,7 @@ class WebExtensionPromptFeature(
             addon = addon.copy(permissions = promptRequest.permissions),
             promptRequest = promptRequest,
             permissions = promptRequest.permissions,
-            mode = PermissionsDialogMode.OPTIONAL,
+            forOptionalPermissions = true,
         )
     }
 
@@ -153,7 +152,7 @@ class WebExtensionPromptFeature(
         promptRequest: WebExtensionPromptRequest.AfterInstallation.Permissions,
         permissions: List<String> = emptyList(),
         origins: List<String> = emptyList(),
-        mode: PermissionsDialogMode = PermissionsDialogMode.INSTALL,
+        forOptionalPermissions: Boolean = false,
     ) {
         if (!isInstallationInProgress && !hasExistingPermissionDialogFragment()) {
             val dialog =
@@ -162,7 +161,7 @@ class WebExtensionPromptFeature(
                     permissions = permissions,
                     origins = origins,
                     dataCollectionPermissions = emptyList(),
-                    mode = mode,
+                    forOptionalPermissions = forOptionalPermissions,
                     onPositiveButtonClicked = { _, privateBrowsingAllowed, _ ->
                         handlePermissions(
                             promptRequest,
