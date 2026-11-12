@@ -25,4 +25,6 @@
     <string name="pref_key_override_amo_collection" translatable="false">pref_key_override_amo_collection</string>
     <string name="pref_key_override_amo_user" translatable="false">pref_key_override_amo_user</string>
     <string name="pref_key_compose_ui" translatable="false">pref_key_compose_ui</string>
+    <string name="pref_key_dns_mode" translatable="false">pref_key_dns_mode</string>
+    <string name="pref_key_dns_status" translatable="false">pref_key_dns_status</string>
 </resources>

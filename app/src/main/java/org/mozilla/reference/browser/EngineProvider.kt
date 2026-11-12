@@ -34,9 +34,21 @@ object EngineProvider {
             builder.aboutConfigEnabled(true)
             builder.extensionsWebAPIEnabled(true)
             runtime = GeckoRuntime.create(context, builder.build())
+
+            // The runtime is (re)created once per process, so applying the DNS policy here re-applies it
+            // on every app start.
+            DnsSettings.applyOnStartup(context, runtime!!)
         }
 
         return runtime!!
+    }
+
+    /** Re-applies the DNS policy after the user changed it on the settings page. */
+    fun reapplyDnsSettings(
+        context: Context,
+        mode: String,
+    ) {
+        DnsSettings.applyModeChange(getOrCreateRuntime(context), mode)
     }
 
     /** Creates the engine on the shared runtime and installs [WebCompatFeature] on it. */

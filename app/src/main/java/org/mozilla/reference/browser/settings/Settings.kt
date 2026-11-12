@@ -55,4 +55,16 @@ object Settings {
     /** Both values are required because an AMO collection is addressed by its owner and its name together. */
     fun isAmoCollectionOverrideConfigured(context: Context): Boolean =
         getOverrideAmoUser(context).isNotEmpty() && getOverrideAmoCollection(context).isNotEmpty()
+
+    /**
+     * The DNS resolution mode chosen on the settings page (values defined in
+     * [org.mozilla.reference.browser.DnsSettings]); written by the settings page's list preference into the
+     * same shared preferences. Defaults to the forced system-resolution mode when unset.
+     */
+    fun getDnsMode(context: Context): String =
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .getString(
+                context.getString(R.string.pref_key_dns_mode),
+                "system",
+            ) ?: "system"
 }
