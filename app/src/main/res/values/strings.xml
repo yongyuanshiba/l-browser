@@ -30,13 +30,10 @@
     <string name="preferences_autofill_summary">Autofill logins and passwords in other apps</string>
 
     <!-- Preference enables sync for history -->
-    <string name="preferences_sync_history">History</string>
 
     <!-- Preference enables sync for synced tabs -->
-    <string name="preferences_sync_tabs">Open tabs</string>
 
     <!-- Preference enables sync for synced tabs -->
-    <string name="preferences_sync_passwords">Passwords</string>
 
     <!-- Preference enabling remote debugging -->
     <string name="preferences_remote_debugging">Remote debugging via USB</string>
@@ -60,28 +57,21 @@
     <string name="pair_sign_in">Sign in with a QR code</string>
 
     <!-- Preference for settings related to the signed in Firefox Account -->
-    <string name="firefox_account">Firefox Account</string>
 
     <!-- Preference for signing out -->
     <string name="sign_out">Sign out</string>
 
     <!-- Preference for syncing immediately -->
-    <string name="sync_now">Sync now</string>
 
     <!-- Preference for syncing immediately -->
-    <string name="syncing">Syncing</string>
 
     <!-- Preference for managing your account via accounts.firefox.com -->
-    <string name="manage_account">Manage account</string>
 
     <!-- Summary of the preference for managing your account via accounts.firefox.com. -->
-    <string name="manage_account_summary">Change your password, manage data collection, or delete your account</string>
 
     <!-- Preference summary indicating that sync failed along with last time it succeeded -->
-    <string name="preferences_sync_failed_summary">Sync failed. Last success: %s</string>
 
     <!-- Preference summary showing never synced -->
-    <string name="preferences_sync_failed_never_synced_summary">Sync failed. Last synced: never</string>
 
     <!-- Preference summary showing last time synced -->
     <string name="preferences_sync_last_synced_summary">Last synced: %s</string>
@@ -96,7 +86,6 @@
     <string name="preferences_privacy_summary">Tracking, cookies, data choices</string>
 
     <!-- Preference category for sync settings -->
-    <string name="sync_category">Choose what to sync</string>
 
     <!-- Preference for open links in apps -->
     <string name="open_links_in_apps">Open links in apps</string>
@@ -117,7 +106,6 @@
     <string name="synced_tabs">Synced Tabs</string>
 
     <!-- Menu option on the toolbar that takes you to account settings page-->
-    <string name="account_settings">Account Settings</string>
 
     <!-- Menu option on the toolbar that takes you to privacy settings page-->
     <string name="privacy_settings">Privacy Settings</string>
@@ -171,19 +159,12 @@
 
     <!-- Send Tab -->
     <!-- Name of the "receive tabs" notification channel. Displayed in the "App notifications" system settings for the app -->
-    <string name="fxa_received_tab_channel_name">Received tabs</string>
     <!-- Description of the "receive tabs" notification channel. Displayed in the "App notifications" system settings for the app -->
-    <string name="fxa_received_tab_channel_description">Notifications for tabs received from other Firefox devices.</string>
     <!--  The body for these is the URL of the tab received  -->
-    <string name="fxa_tab_received_notification_name">Tab Received</string>
     <!-- %s is the device name -->
-    <string name="fxa_tab_received_from_notification_name">Tab from %s</string>
 
     <!-- Synced Tabs -->
     <string name="synced_tabs_connect_to_sync_account">Connect with a Firefox Account.</string>
-    <string name="synced_tabs_connect_another_device">Connect another device.</string>
-    <string name="synced_tabs_reauth">Please re-authenticate.</string>
-    <string name="synced_tabs_enable_tab_syncing">Please enable tab syncing.</string>
 
     <!-- Reader View -->
     <!-- Content description for the button that opens reader view appearance controls -->
