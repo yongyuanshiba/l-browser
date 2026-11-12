@@ -19,7 +19,6 @@ import org.mozilla.reference.browser.autofill.AutofillConfirmActivity
 import org.mozilla.reference.browser.autofill.AutofillSearchActivity
 import org.mozilla.reference.browser.autofill.AutofillUnlockActivity
 import org.mozilla.reference.browser.components.Analytics
-import org.mozilla.reference.browser.components.BackgroundServices
 import org.mozilla.reference.browser.components.Core
 import org.mozilla.reference.browser.components.Push
 import org.mozilla.reference.browser.components.Services
@@ -41,17 +40,6 @@ class Components(
         )
     }
 
-    // Background services are initiated eagerly; they kick off periodic tasks and setup an accounts system.
-    val backgroundServices by lazy {
-        BackgroundServices(
-            context,
-            push,
-            core.lazyHistoryStorage,
-            core.lazyRemoteTabsStorage,
-            core.lazyLoginsStorage,
-            applicationScope,
-        )
-    }
     val analytics by lazy { Analytics(context) }
     val utils by lazy {
         Utilities(
@@ -65,7 +53,7 @@ class Components(
         )
     }
     val services by lazy {
-        Services(context, backgroundServices.accountManager, useCases.tabsUseCases, applicationScope)
+        Services(context)
     }
     val push by lazy { Push(context, analytics.crashReporter) }
 
