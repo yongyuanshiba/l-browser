@@ -19,18 +19,11 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
-import mozilla.components.concept.sync.Device
-import mozilla.components.concept.sync.TabData
-import mozilla.components.support.base.ids.SharedIdsHelper
 import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.reference.browser.IntentRequestCodes.REQUEST_CODE_DATA_REPORTING
 
 /** Manages notification channels and allows displaying different supported types of notifications. */
 object NotificationManager {
-    // Send Tab
-    private const val RECEIVE_TABS_TAG = "org.mozilla.reference.browser.receivedTabs"
-    private const val RECEIVE_TABS_CHANNEL_ID = "org.mozilla.reference.browser.ReceivedTabsChannel"
-
     // Data Reporting
     private const val PRIVACY_NOTICE_URL = "https://www.mozilla.org/en-US/privacy/firefox/"
     private const val DATA_REPORTING_VERSION = 1
@@ -43,76 +36,6 @@ object NotificationManager {
     private const val NOTIFICATION_CHANNEL_ID = "default-notification-channel"
 
     private val logger = Logger("NotificationManager")
-
-    /**
-     * Displays a notification for each valid tab received from a device.
-     *
-     * @param context The Android application context.
-     * @param device The device from which the tabs were received, or `null` if unavailable.
-     * @param tabs A list of tabs to be displayed.
-     */
-    @SuppressLint("MissingPermission", "NotifyUsage")
-    fun showReceivedTabs(
-        context: Context,
-        device: Device?,
-        tabs: List<TabData>,
-    ) {
-        // In the future, experiment with displaying multiple tabs from the same device as as Notification Groups.
-        // For now, a single notification per tab received will suffice.
-        logger.debug("Showing ${tabs.size} tab(s) received from deviceID=${device?.id}")
-
-        tabs.forEach { tab ->
-            val intent =
-                Intent(Intent.ACTION_VIEW, tab.url.toUri()).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-            val flags =
-                if (SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
-                } else {
-                    PendingIntent.FLAG_ONE_SHOT
-                }
-            val notificationId = SharedIdsHelper.getNextIdForTag(context, RECEIVE_TABS_TAG)
-            val pendingIntent: PendingIntent =
-                PendingIntent.getActivity(
-                    context,
-                    notificationId,
-                    intent,
-                    flags,
-                )
-            // We pick 'IMPORTANCE_HIGH' priority because this is a user-triggered action that is
-            // expected to be part of a continuity flow. That is, user is expected to be waiting for
-            // this notification on their device; make it obvious.
-            val importance = AndroidNotificationManager.IMPORTANCE_HIGH
-            val channelId =
-                getNotificationChannelId(
-                    context,
-                    RECEIVE_TABS_CHANNEL_ID,
-                    context.getString(R.string.fxa_received_tab_channel_name),
-                    context.getString(R.string.fxa_received_tab_channel_description),
-                    importance,
-                )
-
-            val builder =
-                NotificationCompat.Builder(context, channelId)
-                    .setSmallIcon(R.drawable.ic_notification)
-                    .setSendTabTitle(context, device, tab)
-                    .setWhen(System.currentTimeMillis())
-                    .setContentText(tab.url)
-                    .setContentIntent(pendingIntent)
-                    .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setDefaults(Notification.DEFAULT_VIBRATE or Notification.DEFAULT_SOUND)
-                    .setCategory(NotificationCompat.CATEGORY_REMINDER)
-
-            NotificationManagerCompat.from(context)
-                .notify(
-                    RECEIVE_TABS_TAG,
-                    notificationId,
-                    builder.build(),
-                )
-        }
-    }
 
     /**
      * [BrowserActivity] calls this from onCreate; the policy version stored after notifying limits the data policy
@@ -220,28 +143,5 @@ object NotificationManager {
                 }
 
         notificationManager.createNotificationChannel(channel)
-    }
-
-    private fun NotificationCompat.Builder.setSendTabTitle(
-        context: Context,
-        device: Device?,
-        tab: TabData,
-    ): NotificationCompat.Builder {
-        device?.let {
-            setContentTitle(
-                context.getString(
-                    R.string.fxa_tab_received_from_notification_name,
-                    it.displayName,
-                ),
-            )
-            return this
-        }
-
-        if (tab.title.isEmpty()) {
-            setContentTitle(context.getString(R.string.fxa_tab_received_notification_name))
-        } else {
-            setContentTitle(tab.title)
-        }
-        return this
     }
 }
