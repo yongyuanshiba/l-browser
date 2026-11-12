@@ -20,23 +20,16 @@ import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import kotlin.system.exitProcess
-import mozilla.components.service.fxa.FxaService
-import mozilla.components.service.fxa.manager.SCOPE_PROFILE
-import mozilla.components.service.fxa.manager.SCOPE_SYNC
 import mozilla.components.support.ktx.android.view.showKeyboard
 import org.mozilla.reference.browser.R
 import org.mozilla.reference.browser.R.string.pref_key_about_page
-import org.mozilla.reference.browser.R.string.pref_key_firefox_account
 import org.mozilla.reference.browser.R.string.pref_key_make_default_browser
 import org.mozilla.reference.browser.R.string.pref_key_override_amo_collection
-import org.mozilla.reference.browser.R.string.pref_key_pair_sign_in
 import org.mozilla.reference.browser.R.string.pref_key_privacy
 import org.mozilla.reference.browser.R.string.pref_key_remote_debugging
-import org.mozilla.reference.browser.R.string.pref_key_sign_in
 import org.mozilla.reference.browser.autofill.AutofillPreference
 import org.mozilla.reference.browser.ext.getPreferenceKey
 import org.mozilla.reference.browser.ext.requireComponents
-import org.mozilla.reference.browser.sync.BrowserFxAEntryPoint
 
 private typealias RBSettings = org.mozilla.reference.browser.settings.Settings
 
@@ -65,9 +58,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupPreferences() {
-        val signInKey = requireContext().getPreferenceKey(pref_key_sign_in)
-        val signInPairKey = requireContext().getPreferenceKey(pref_key_pair_sign_in)
-        val firefoxAccountKey = requireContext().getPreferenceKey(pref_key_firefox_account)
         val makeDefaultBrowserKey = requireContext().getPreferenceKey(pref_key_make_default_browser)
         val remoteDebuggingKey = requireContext().getPreferenceKey(pref_key_remote_debugging)
         val aboutPageKey = requireContext().getPreferenceKey(pref_key_about_page)
@@ -75,30 +65,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val customAddonsKey = requireContext().getPreferenceKey(pref_key_override_amo_collection)
         val autofillPreferenceKey = requireContext().getPreferenceKey(R.string.pref_key_autofill)
 
-        val preferenceSignIn = findPreference<Preference>(signInKey)
-        val preferencePairSignIn = findPreference<Preference>(signInPairKey)
-        val preferenceFirefoxAccount = findPreference<Preference>(firefoxAccountKey)
         val preferenceMakeDefaultBrowser = findPreference<Preference>(makeDefaultBrowserKey)
         val preferenceRemoteDebugging = findPreference<SwitchPreferenceCompat>(remoteDebuggingKey)
         val preferenceAboutPage = findPreference<Preference>(aboutPageKey)
         val preferencePrivacy = findPreference<Preference>(privacyKey)
         val preferenceCustomAddons = findPreference<Preference>(customAddonsKey)
         val preferenceAutofill = findPreference<AutofillPreference>(autofillPreferenceKey)
-
-        val accountManager = requireComponents.backgroundServices.accountManager
-        if (accountManager.authenticatedAccount() != null) {
-            preferenceSignIn?.isVisible = false
-            preferencePairSignIn?.isVisible = false
-            preferenceFirefoxAccount?.summary = accountManager.accountProfile()?.email.orEmpty()
-            preferenceFirefoxAccount?.onPreferenceClickListener = getClickListenerForFirefoxAccount()
-        } else {
-            preferenceSignIn?.isVisible = true
-            preferenceFirefoxAccount?.isVisible = false
-            preferenceFirefoxAccount?.onPreferenceClickListener = null
-            preferenceSignIn?.onPreferenceClickListener = getClickListenerForSignIn()
-            preferencePairSignIn?.isVisible = true
-            preferencePairSignIn?.onPreferenceClickListener = getClickListenerForPairingSignIn()
-        }
 
         if (!AutofillPreference.isSupported(requireContext())) {
             preferenceAutofill?.isVisible = false
@@ -116,41 +88,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun getClickListenerForMakeDefaultBrowser(): OnPreferenceClickListener = OnPreferenceClickListener {
         val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
         startActivity(intent)
-        true
-    }
-
-    private fun getClickListenerForSignIn(): OnPreferenceClickListener = OnPreferenceClickListener {
-        requireComponents.services.accountsAuthFeature.beginAuthentication(
-            requireContext(),
-            BrowserFxAEntryPoint.HomeMenu,
-            service = FxaService.Sync.identifier,
-            scopes = setOf(SCOPE_PROFILE, SCOPE_SYNC),
-        )
-        activity?.finish()
-        true
-    }
-
-    private fun getClickListenerForPairingSignIn(): OnPreferenceClickListener = OnPreferenceClickListener {
-        parentFragmentManager
-            .beginTransaction()
-            .replace(R.id.container, PairSettingsFragment())
-            .addToBackStack(null)
-            .commit()
-        getActionBarUpdater().apply {
-            updateTitle(R.string.pair_preferences)
-        }
-        true
-    }
-
-    private fun getClickListenerForFirefoxAccount(): OnPreferenceClickListener = OnPreferenceClickListener {
-        parentFragmentManager
-            .beginTransaction()
-            .replace(R.id.container, AccountSettingsFragment())
-            .addToBackStack(null)
-            .commit()
-        getActionBarUpdater().apply {
-            updateTitle(R.string.account_settings)
-        }
         true
     }
 
