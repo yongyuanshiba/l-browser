@@ -24,7 +24,6 @@ import mozilla.components.support.ktx.android.content.isMainProcess
 import mozilla.components.support.ktx.android.content.runOnlyInMainProcess
 import mozilla.components.support.rusthttp.RustHttpConfig
 import mozilla.components.support.webextensions.WebExtensionSupport
-import org.mozilla.reference.browser.push.PushFxaIntegration
 import org.mozilla.reference.browser.push.WebPushEngineIntegration
 
 /**
@@ -115,9 +114,6 @@ open class BrowserApplication : Application() {
 
             // WebPush integration to observe and deliver push messages to engine.
             WebPushEngineIntegration(components.core.engine, it, applicationScope).start()
-
-            // Perform a one-time initialization of the account manager if a message is received.
-            PushFxaIntegration(it, lazy { components.backgroundServices.accountManager }, applicationScope).launch()
 
             // Initialize the push feature and service.
             it.initialize()
