@@ -9,44 +9,17 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import mozilla.components.lib.crash.CrashReporter
-import mozilla.components.lib.crash.sentry.SentryService
-import mozilla.components.lib.crash.service.CrashReporterService
-import mozilla.components.lib.crash.service.MozillaSocorroService
-import org.mozilla.geckoview.BuildConfig.MOZ_APP_BUILDID
-import org.mozilla.geckoview.BuildConfig.MOZ_APP_VENDOR
-import org.mozilla.geckoview.BuildConfig.MOZ_APP_VERSION
-import org.mozilla.geckoview.BuildConfig.MOZ_UPDATE_CHANNEL
 import org.mozilla.reference.browser.BrowserApplication
-import org.mozilla.reference.browser.BuildConfig
 import org.mozilla.reference.browser.R
 
 /** Component group for all functionality related to analytics e.g. crash reporting and telemetry. */
 class Analytics(private val context: Context) {
-    /** A generic crash reporter component configured to use both Sentry and Socorro. */
+    /**
+     * A crash reporter that only records crashes locally (listed in about:crashes).
+     * No crash services are attached, so reports are never sent to Socorro, Sentry
+     * or any other external endpoint.
+     */
     val crashReporter: CrashReporter by lazy {
-        val socorroService =
-            MozillaSocorroService(
-                context,
-                appName = "ReferenceBrowser",
-                version = MOZ_APP_VERSION,
-                buildId = MOZ_APP_BUILDID,
-                vendor = MOZ_APP_VENDOR,
-                releaseChannel = MOZ_UPDATE_CHANNEL,
-            )
-
-        val services: MutableList<CrashReporterService> = mutableListOf(socorroService)
-
-        if (isSentryEnabled()) {
-            val sentryService =
-                SentryService(
-                    context,
-                    BuildConfig.SENTRY_TOKEN,
-                    mapOf("geckoview" to "$MOZ_APP_VERSION-$MOZ_APP_BUILDID"),
-                    sendEventForNativeCrashes = true,
-                )
-            services.add(sentryService)
-        }
-
         val flags =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 PendingIntent.FLAG_IMMUTABLE
@@ -56,7 +29,7 @@ class Analytics(private val context: Context) {
 
         CrashReporter(
             context = context,
-            services = services,
+            services = emptyList(),
             telemetryServices = emptyList(),
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             promptConfiguration =
@@ -70,6 +43,3 @@ class Analytics(private val context: Context) {
         )
     }
 }
-
-/** Only builds with a `.sentry_token` file get a token; the others report crashes without the Sentry service. */
-fun isSentryEnabled() = !BuildConfig.SENTRY_TOKEN.isNullOrEmpty()
