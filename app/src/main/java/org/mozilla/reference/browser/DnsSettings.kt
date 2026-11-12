@@ -5,7 +5,6 @@
 package org.mozilla.reference.browser
 
 import android.content.Context
-import org.mozilla.geckoview.ExperimentalGeckoViewApi
 import org.mozilla.geckoview.GeckoPreferenceController
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoRuntimeSettings
@@ -82,8 +81,14 @@ object DnsSettings {
             .setDefaultRecursiveResolverUri("")
     }
 
-    /** Removes the user values written by [pinSystemResolution]; compiled-in defaults apply again. */
-    @OptIn(ExperimentalGeckoViewApi::class)
+    /**
+     * Removes the user values written by [pinSystemResolution]; compiled-in defaults apply again.
+     *
+     * [GeckoPreferenceController] is an official GeckoView API whose members carry the androidx
+     * experimental marker; like the rest of this codebase's GeckoView usage, no opt-in annotation is
+     * required for the Kotlin compiler (the marker is enforced by lint only, and this project's lint
+     * configuration does not enable that check).
+     */
     private fun clearPinnedValues() {
         // Fire-and-forget: the returned GeckoResults are not needed to decide anything here.
         GeckoPreferenceController.clearGeckoUserPref(PREF_TRR_MODE)
