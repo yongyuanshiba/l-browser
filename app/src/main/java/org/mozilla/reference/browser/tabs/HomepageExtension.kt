@@ -13,9 +13,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.webextension.MessageHandler
 import mozilla.components.concept.engine.webextension.Metadata
+import mozilla.components.concept.engine.webextension.Port
 import mozilla.components.concept.engine.webextension.WebExtension
 import mozilla.components.support.base.log.logger.Logger
+import org.json.JSONObject
 
 /**
  * Carries the homepage in a built-in WebExtension page (moz-extension origin).
@@ -27,14 +30,14 @@ import mozilla.components.support.base.log.logger.Logger
  *
  * The page's moz-extension:// address is discovered through the official metadata field:
  * [WebExtension.getMetadata] exposes `baseUrl` — "Root URL for this extension's pages", produced
- * on the Gecko side from the extension policy's own URL. Neither the install callback's
- * [WebExtension.url] (that is the resource:// install location, measured) nor a native-messaging
- * self-report can provide it: without the `geckoViewAddons` permission, an extension's
- * connectNative calls never reach the app's message handlers at all (measured over four probe
- * runs; the messaging chain has been removed). The metadata of the object handed to the install
- * callback can still be incomplete — its baseUrl is empty until the extension policy exists — so
- * discovery retries through [Engine.listInstalledWebExtensions] until a value with the
- * `moz-extension://` prefix shows up.
+ * on the Gecko side from the extension policy's own URL. The install callback's [WebExtension.url]
+ * is not it (that is the resource:// install location, measured). Native messaging is not used for
+ * discovery — only as the homepage's data channel, and it only reaches the app's handlers because
+ * the manifest carries the `geckoViewAddons` permission (without it, an extension's connectNative
+ * calls never arrive at all — measured over four probe runs, then root-caused in the URL-discovery
+ * research). The metadata of the object handed to the install callback can still be incomplete —
+ * its baseUrl is empty until the extension policy exists — so discovery retries through
+ * [Engine.listInstalledWebExtensions] until a value with the `moz-extension://` prefix shows up.
  */
 object HomepageExtension {
     /** Fixed gecko id; must match `browser_specific_settings.gecko.id` in the extension manifest. */
@@ -81,6 +84,10 @@ object HomepageExtension {
                 )
                 publishBaseUrl(extension.getMetadata(), "install")
                 discoverBaseUrl(engine)
+                // Gate build: the homepage's data channel. Native pushes the page data
+                // to the extension's background script over this port; that only reaches
+                // us because the manifest now carries the `geckoViewAddons` permission.
+                extension.registerBackgroundMessageHandler("browser", gateMessageHandler)
             },
             onError = { throwable ->
                 Logger.error("HomepageExtension: install failed: ${throwable.message}")
@@ -159,4 +166,30 @@ object HomepageExtension {
      * extension is unavailable, so the caller can fall back to a blank tab instead of hanging.
      */
     suspend fun awaitPageUrl(): String? = withTimeoutOrNull(URL_WAIT_MS) { pageUrlDeferred.await() }
+
+    /**
+     * Gate-build handler for the native data channel: as soon as the extension's background
+     * script connects its port, push a token message down it. The background mirrors the token
+     * into `browser.storage.local`, where the probe page reads and displays it — proving the
+     * native → background → storage → page chain that the formal homepage's data will use.
+     */
+    private val gateMessageHandler =
+        object : MessageHandler {
+            override fun onPortConnected(port: Port) {
+                Logger.info("HomepageExtension: gate port connected (name=${port.name()})")
+                port.postMessage(
+                    JSONObject()
+                        .put("type", "l-gate")
+                        .put("token", "gate-token-2a"),
+                )
+            }
+
+            override fun onPortMessage(message: Any, port: Port) {
+                Logger.info("HomepageExtension: gate port message: $message")
+            }
+
+            override fun onPortDisconnected(port: Port) {
+                Logger.info("HomepageExtension: gate port disconnected")
+            }
+        }
 }
