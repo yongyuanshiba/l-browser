@@ -7,7 +7,11 @@ package org.mozilla.reference.browser.tabs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.EngineSession
+import mozilla.components.concept.engine.webextension.MessageHandler
+import mozilla.components.concept.engine.webextension.Port
 import mozilla.components.support.base.log.logger.Logger
+import org.json.JSONObject
 
 /**
  * Carries the homepage in a built-in WebExtension page (moz-extension origin).
@@ -15,9 +19,14 @@ import mozilla.components.support.base.log.logger.Logger
  * The step-1 route — serving the homepage through the request interceptor — was measured to land
  * as a `data:` document with an opaque origin: localStorage never persisted there, and the user
  * homepage code's engine switcher (which stores its choice in localStorage) cannot work on it. An
- * extension page has a real, profile-stable origin instead. This holder installs the extension at
- * app start and publishes its page URL: the cold-start landing waits for it, and the new-tab
- * action reads whatever is current.
+ * extension page has a real, profile-stable origin instead.
+ *
+ * The native side cannot derive the page's moz-extension:// address itself: the install callback
+ * reports the extension's resource:// location, not its runtime base URL. The extension therefore
+ * reports its own URL from its background script over the native messaging port (see
+ * assets/extensions/lprobe/background.js); this holder installs the extension at app start,
+ * listens for that report, and publishes the URL — the cold-start landing waits for it, and the
+ * new-tab action reads whatever is current.
  */
 object HomepageExtension {
     /** Fixed gecko id; must match `browser_specific_settings.gecko.id` in the extension manifest. */
@@ -26,18 +35,31 @@ object HomepageExtension {
     /** Where the extension ships inside the APK (see app/src/main/assets/extensions/). */
     private const val EXTENSION_LOCATION = "resource://android/assets/extensions/lprobe/"
 
-    /** Page opened as the homepage while the carrier route is being proven. */
-    private const val PAGE_PATH = "probe.html"
+    /** Native messaging application name; must match `connectNative(...)` in background.js. */
+    private const val MESSAGE_HANDLER_NAME = "browser"
 
-    /** Upper bound for the cold-start landing to wait on the extension install. */
-    private const val INSTALL_WAIT_MS = 30_000L
+    /** Upper bound for the cold-start landing to wait on the extension's URL report. */
+    private const val URL_WAIT_MS = 30_000L
 
     private val pageUrlDeferred = CompletableDeferred<String?>()
 
-    /** The probe page URL once the extension is installed; null before that or after a failure. */
+    /** The homepage page URL once the extension has reported it; null before that or on failure. */
     @Volatile
     var pageUrl: String? = null
         private set
+
+    private val urlMessageHandler =
+        object : MessageHandler {
+            override fun onPortMessage(message: Any, port: Port) {
+                handleUrlMessage(message)
+                runCatching { port.postMessage(JSONObject().put("ack", true)) }
+            }
+
+            override fun onMessage(message: Any, source: EngineSession?): Any? {
+                handleUrlMessage(message)
+                return null
+            }
+        }
 
     /** Installs the built-in extension. Called once, from BrowserApplication.onCreate. */
     fun install(engine: Engine) {
@@ -45,16 +67,11 @@ object HomepageExtension {
             id = EXTENSION_ID,
             url = EXTENSION_LOCATION,
             onSuccess = { extension ->
-                val base = extension.url
-                if (base.startsWith("moz-extension://")) {
-                    val url = base.trimEnd('/') + "/" + PAGE_PATH
-                    pageUrl = url
-                    Logger.info("HomepageExtension: installed, page url is $url")
-                    pageUrlDeferred.complete(url)
-                } else {
-                    Logger.error("HomepageExtension: unexpected extension url: $base")
-                    pageUrlDeferred.complete(null)
-                }
+                Logger.info(
+                    "HomepageExtension: installed (location ${extension.url}); " +
+                        "waiting for the extension to report its page url",
+                )
+                extension.registerBackgroundMessageHandler(MESSAGE_HANDLER_NAME, urlMessageHandler)
             },
             onError = { throwable ->
                 Logger.error("HomepageExtension: install failed: ${throwable.message}")
@@ -63,9 +80,23 @@ object HomepageExtension {
         )
     }
 
+    private fun handleUrlMessage(message: Any) {
+        if (pageUrlDeferred.isCompleted) {
+            return
+        }
+        val url = (message as? JSONObject)?.optString("url").orEmpty()
+        if (url.startsWith("moz-extension://")) {
+            pageUrl = url
+            Logger.info("HomepageExtension: homepage url reported by extension: $url")
+            pageUrlDeferred.complete(url)
+        } else {
+            Logger.error("HomepageExtension: ignoring unexpected url message: $message")
+        }
+    }
+
     /**
-     * Suspends until installation has resolved (or the wait times out); null when the extension
-     * is unavailable, so the caller can fall back to a blank tab instead of hanging.
+     * Suspends until the extension has reported its page URL (or the wait times out); null when
+     * the extension is unavailable, so the caller can fall back to a blank tab instead of hanging.
      */
-    suspend fun awaitPageUrl(): String? = withTimeoutOrNull(INSTALL_WAIT_MS) { pageUrlDeferred.await() }
+    suspend fun awaitPageUrl(): String? = withTimeoutOrNull(URL_WAIT_MS) { pageUrlDeferred.await() }
 }
