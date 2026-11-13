@@ -47,7 +47,7 @@ object HomepageExtension {
     private const val EXTENSION_LOCATION = "resource://android/assets/extensions/lprobe/"
 
     /** Page inside the extension that carries the homepage (the probe page while verifying). */
-    private const val PAGE_PATH = "probe.html"
+    private const val PAGE_PATH = "shell.html"
 
     /** Upper bound for the cold-start landing to wait on URL discovery. */
     private const val URL_WAIT_MS = 30_000L

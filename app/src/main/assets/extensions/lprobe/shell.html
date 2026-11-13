@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>LPROBE-P</title>
+</head>
+<body>
+<pre id="shell_out">SHELL pending</pre>
+<script>
+try {
+    document.getElementById('shell_out').textContent = 'SHELL_INLINE_OK';
+    window.localStorage.setItem('__l_p_shell__', 'SHELL_INLINE_OK');
+} catch (e) {
+    document.getElementById('shell_out').textContent = 'SHELL_INLINE_ERR ' + e.name;
+}
+</script>
+<script src="shell.js"></script>
+</body>
+</html>
