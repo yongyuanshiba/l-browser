@@ -9,8 +9,8 @@
       "id": "l-homepage@jasmine.li"
     }
   },
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
-  "description": "Built-in carrier for the L homepage. Probe E1a: manifest CSP carries only 'self' and 'unsafe-eval' for scripts; the probe page measures eval and the Function constructor.",
+  "content_security_policy": "script-src 'self' blob:",
+  "description": "Built-in carrier for the L homepage. Probe E1b: manifest CSP carries only 'self' and blob: for scripts; re-tests the blob injection route under a provably valid CSP (no poison token).",
   "manifest_version": 2,
   "name": "L Homepage (probe)",
   "permissions": [
@@ -18,5 +18,5 @@
     "nativeMessaging",
     "storage"
   ],
-  "version": "1.5"
+  "version": "1.6"
 }
