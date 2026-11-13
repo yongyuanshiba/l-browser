@@ -50,6 +50,10 @@ object HomepageExtension {
 
     private val urlMessageHandler =
         object : MessageHandler {
+            override fun onPortConnected(port: Port) {
+                Logger.info("HomepageExtension: native port connected: ${port.name()}")
+            }
+
             override fun onPortMessage(message: Any, port: Port) {
                 handleUrlMessage(message)
                 runCatching { port.postMessage(JSONObject().put("ack", true)) }
