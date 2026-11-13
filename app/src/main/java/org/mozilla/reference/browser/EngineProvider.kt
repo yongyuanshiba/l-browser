@@ -5,7 +5,6 @@
 package org.mozilla.reference.browser
 
 import android.content.Context
-import java.io.File
 import mozilla.components.browser.engine.gecko.GeckoEngine
 import mozilla.components.browser.engine.gecko.fetch.GeckoViewFetchClient
 import mozilla.components.concept.engine.DefaultSettings
@@ -34,15 +33,6 @@ object EngineProvider {
             // About config it's no longer enabled by default
             builder.aboutConfigEnabled(true)
             builder.extensionsWebAPIEnabled(true)
-
-            // Stage-4 probe P: hand GeckoView a config file that relaxes the default
-            // content security policy for extension pages, so the homepage shell can
-            // deliver the assembled homepage (inline scripts included) through
-            // document.write. Whether this probe change stays is decided when the
-            // homepage carrier route is finalised; the DNS application below is
-            // untouched by it.
-            builder.configFilePath(writeExtensionCspConfig(context).absolutePath)
-
             runtime = GeckoRuntime.create(context, builder.build())
 
             // The runtime is (re)created once per process, so applying the DNS policy here re-applies it
@@ -51,23 +41,6 @@ object EngineProvider {
         }
 
         return runtime!!
-    }
-
-    /**
-     * Writes the GeckoView config file (YAML) that sets the default CSP for
-     * WebExtension pages. The homepage extension's manifest deliberately carries no
-     * `content_security_policy` key of its own, so this default is the one that
-     * applies to it. Rewritten on every runtime creation; the file lives in the
-     * app's private directory.
-     */
-    private fun writeExtensionCspConfig(context: Context): File {
-        val file = File(context.filesDir, "l-geckoview-config.yaml")
-        file.writeText(
-            "prefs:\n" +
-                "  extensions.webextensions.default-content-security-policy: " +
-                "\"script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'\"\n",
-        )
-        return file
     }
 
     /** Re-applies the DNS policy after the user changed it on the settings page. */

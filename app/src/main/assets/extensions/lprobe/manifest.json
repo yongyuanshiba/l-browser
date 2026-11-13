@@ -1,1 +1,22 @@
-{"background":{"scripts":["background.js"]},"browser_specific_settings":{"gecko":{"id":"l-homepage@jasmine.li"}},"description":"Built-in carrier for the L homepage. Probe P: no manifest CSP key; the shell page writes the assembled homepage with document.write while the runtime default CSP is relaxed through the GeckoView config file.","manifest_version":2,"name":"L Homepage (probe)","permissions":["geckoViewAddons","nativeMessaging","storage"],"version":"1.3"}
+{
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "l-homepage@jasmine.li"
+    }
+  },
+  "content_security_policy": "script-src 'self' 'unsafe-inline' blob:; object-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:",
+  "description": "Built-in carrier for the L homepage. Probe F: the homepage is delivered as a file in the app-private directory instead; extension manifest back to the 1.2 shape.",
+  "manifest_version": 2,
+  "name": "L Homepage (probe)",
+  "permissions": [
+    "geckoViewAddons",
+    "nativeMessaging",
+    "storage"
+  ],
+  "version": "1.4"
+}
