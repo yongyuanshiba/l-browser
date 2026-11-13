@@ -24,7 +24,7 @@ object HomepageExtension {
     const val EXTENSION_ID = "l-homepage@jasmine.li"
 
     /** Where the extension ships inside the APK (see app/src/main/assets/extensions/). */
-    private const val EXTENSION_LOCATION = "resource://android/assets/extensions/lprobe"
+    private const val EXTENSION_LOCATION = "resource://android/assets/extensions/lprobe/"
 
     /** Page opened as the homepage while the carrier route is being proven. */
     private const val PAGE_PATH = "probe.html"
