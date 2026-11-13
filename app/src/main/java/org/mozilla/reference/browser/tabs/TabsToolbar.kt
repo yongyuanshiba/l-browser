@@ -35,7 +35,7 @@ constructor(
                 R.id.newTab -> {
                     when (isPrivateTray) {
                         true -> tabsUseCases.addTab.invoke("about:privatebrowsing", selectTab = true, private = true)
-                        false -> tabsUseCases.addTab.invoke("about:blank", selectTab = true)
+                        false -> tabsUseCases.addTab.invoke(Homepage.URL, selectTab = true)
                     }
                     closeTabsTray?.invoke()
                 }

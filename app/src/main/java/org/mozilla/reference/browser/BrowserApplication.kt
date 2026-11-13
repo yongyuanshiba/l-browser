@@ -10,8 +10,10 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import mozilla.components.browser.state.action.SystemAction
+import mozilla.components.browser.state.selector.normalTabs
 import mozilla.components.concept.engine.webextension.isUnsupported
 import mozilla.components.concept.push.PushProcessor
 import mozilla.components.feature.addons.update.GlobalAddonDependencyProvider
@@ -23,8 +25,10 @@ import mozilla.components.support.base.log.sink.AndroidLogSink
 import mozilla.components.support.ktx.android.content.isMainProcess
 import mozilla.components.support.ktx.android.content.runOnlyInMainProcess
 import mozilla.components.support.rusthttp.RustHttpConfig
+import mozilla.components.lib.state.ext.flow
 import mozilla.components.support.webextensions.WebExtensionSupport
 import org.mozilla.reference.browser.push.WebPushEngineIntegration
+import org.mozilla.reference.browser.tabs.Homepage
 
 /**
  * Owns the app's [Components]. Engine, add-on and push setup run only in the main process, never in GeckoView child or
@@ -136,6 +140,14 @@ open class BrowserApplication : Application() {
         val sessionStorage = components.core.sessionStorage
 
         components.useCases.tabsUseCases.restore(sessionStorage)
+
+        // A cold start that restored no normal tabs (first run, or everything was closed) still
+        // lands the user on the homepage instead of an empty browser. Waiting for the restore to
+        // complete keeps this from racing the restored tabs.
+        store.flow().first { it.restoreComplete }
+        if (store.state.normalTabs.isEmpty()) {
+            components.useCases.tabsUseCases.addTab.invoke(Homepage.URL, selectTab = true)
+        }
 
         // Now that we have restored our previous state (if there's one) let's setup auto saving the state while
         // the app is used.

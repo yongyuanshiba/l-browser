@@ -14,6 +14,7 @@ import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.request.ErrorType
 import mozilla.components.concept.engine.request.RequestInterceptor
 import org.mozilla.reference.browser.ext.components
+import org.mozilla.reference.browser.tabs.Homepage
 import org.mozilla.reference.browser.tabs.PrivatePage
 
 class AppRequestInterceptor(private val context: Context) : RequestInterceptor {
@@ -28,6 +29,11 @@ class AppRequestInterceptor(private val context: Context) : RequestInterceptor {
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? =
         when (uri) {
+            Homepage.URL -> {
+                val page = Homepage.createHomepagePage(context)
+                RequestInterceptor.InterceptionResponse.Content(page, encoding = "base64")
+            }
+
             "about:privatebrowsing" -> {
                 val page = PrivatePage.createPrivateBrowsingPage(context, uri)
                 RequestInterceptor.InterceptionResponse.Content(page, encoding = "base64")

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>主页</title>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+body {
+    font-family: sans-serif;
+    background: #f7f8fa;
+    color: #222;
+}
+#content {
+    position: absolute;
+    left: 0;
+    top: 15vh;
+    width: 100%;
+    height: 60%;
+}
+.smaller {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    translate: -50% -64px 0;
+    font-size: 34px;
+    font-weight: 600;
+    color: #444;
+}
+.search_part {
+    margin: 0;
+    width: 100%;
+}
+.search_bar {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    translate: -50% 0 0;
+    width: 80%;
+    height: 46px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #dde1e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
+}
+.search_bar > span {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0;
+}
+.search.icon {
+    font-style: normal;
+    color: #98a0aa;
+    font-size: 18px;
+    margin-right: 4px;
+}
+.search.icon::before {
+    content: "⌕";
+}
+#search_input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 16px;
+    color: inherit;
+}
+#search_submit {
+    border: 0;
+    background: transparent;
+    font-size: 14px;
+    color: #333;
+    padding: 4px 2px;
+}
+.opSug_wpr {
+    position: absolute;
+    left: 50%;
+    top: 54px;
+    translate: -50% 0 0;
+    width: 80%;
+}
+.opSug_wpr table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.opSug_wpr td {
+    padding: 8px 11px;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+#button_group {
+    position: absolute;
+    left: 50%;
+    top: 54px;
+    translate: -50% 0 0;
+    height: 0;
+}
+#bookmark_part {
+    position: absolute;
+    left: 50%;
+    top: 58px;
+    translate: -50% 0 0;
+    width: 88%;
+}
+#box_container {
+    width: 100%;
+}
+#container_copy {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0 0;
+}
+.box {
+    display: inline-block;
+    width: 22%;
+    margin: 6px 1% 0;
+    vertical-align: top;
+    text-align: center;
+    overflow: hidden;
+}
+.box > a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.box .url {
+    height: 44px;
+    line-height: 44px;
+    border-radius: 12px;
+    background: #eceff3;
+    font-size: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.box .title {
+    margin-top: 4px;
+    font-size: 12px;
+    word-break: break-all;
+}
+.box .overlay {
+    display: none;
+}
+.l-empty-hint {
+    text-align: center;
+    color: #98a0aa;
+    font-size: 13px;
+    margin-top: 14px;
+}
+</style>
+<style>/*L:PART1CSS*/</style>
+<!--L:SHIM-->
+</head>
+<body>
+<div id="content">
+    <div class="smaller"><span class="logo">L</span></div>
+    <div class="search_part">
+        <form class="search_bar" id="search_form" method="get">
+            <span><i class="search icon"></i><input id="search_input" type="text" placeholder="搜索或输入网址" autocomplete="off"><input id="search_submit" class="search_button" type="submit" value="搜索"></span>
+        </form>
+        <div class="opSug_wpr"><table><tbody id="sug_tbody"></tbody></table></div>
+    </div>
+    <div id="button_group"></div>
+    <div id="bookmark_part"><div id="box_container"><!--L:BOXES--></div></div>
+</div>
+<!--L:PART2-->
+</body>
+</html>
