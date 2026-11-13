@@ -50,7 +50,7 @@ object HomepageExtension {
     private const val PAGE_PATH = "shell.html"
 
     /** Upper bound for the cold-start landing to wait on URL discovery. */
-    private const val URL_WAIT_MS = 30_000L
+    private const val URL_WAIT_MS = 300_000L
 
     /** Discovery retry cadence; the loop stops as soon as a valid base URL is published. */
     private const val DISCOVERY_INTERVAL_MS = 500L
