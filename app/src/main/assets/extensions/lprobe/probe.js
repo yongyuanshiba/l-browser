@@ -13,32 +13,52 @@ window.addEventListener('load', function () {
     document.getElementById('out').textContent = line;
     console.log(line);
 
-    // Gate: can a script supplied as text run via a blob: URL under the extension
-    // page CSP? (Fallback route for the user homepage code's inline scripts if
-    // 'unsafe-inline' itself is not honored.)
+    var gateOut = document.getElementById('gate_out');
+
+    // Route 1: script whose code comes from a blob: URL.
     try {
-        var code = "document.getElementById('gate_out').dataset.blob = 'BLOB_OK';";
-        var blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
-        var script = document.createElement('script');
-        script.src = blobUrl;
-        document.head.appendChild(script);
+        var blobCode = "document.getElementById('gate_out').dataset.blob = 'BLOB_OK';";
+        var blobUrl = URL.createObjectURL(new Blob([blobCode], { type: 'text/javascript' }));
+        var blobScript = document.createElement('script');
+        blobScript.src = blobUrl;
+        document.head.appendChild(blobScript);
     } catch (e) {
         console.log('L-HOME-ERROR: blob setup: ' + e.message);
     }
 
-    // Gate: the native side pushes a token over the native-messaging port; the
-    // background script mirrors it into storage.local. Poll for it here.
-    var gateOut = document.getElementById('gate_out');
-    var tries = 0;
+    // Route 2: script whose code comes from a data: URL.
+    try {
+        var dataCode = "document.getElementById('gate_out').dataset.data = 'DATA_OK';";
+        var dataScript = document.createElement('script');
+        dataScript.src = 'data:text/javascript;base64,' + btoa(dataCode);
+        document.head.appendChild(dataScript);
+    } catch (e) {
+        console.log('L-HOME-ERROR: data setup: ' + e.message);
+    }
+
+    // Route 3: script element with inline text assigned via the DOM.
+    try {
+        var domScript = document.createElement('script');
+        domScript.textContent = "document.getElementById('gate_out').dataset.dom = 'DOM_OK';";
+        document.head.appendChild(domScript);
+    } catch (e) {
+        console.log('L-HOME-ERROR: dom setup: ' + e.message);
+    }
+
+    // Render continuously for ~30s so slow script execution cannot race the
+    // verdict: the final line reports every route's settled state.
+    var ticks = 0;
     var timer = setInterval(function () {
-        tries += 1;
+        ticks += 1;
         browser.storage.local.get('l_gate_token').then(function (res) {
-            var blob = gateOut.dataset.blob || 'BLOB_MISSING';
-            if (res && res.l_gate_token) {
-                gateOut.textContent = 'GATE token=' + res.l_gate_token + ' blob=' + blob;
-                clearInterval(timer);
-            } else if (tries > 120) {
-                gateOut.textContent = 'GATE token=MISSING blob=' + blob;
+            var token = (res && res.l_gate_token) || 'MISSING';
+            gateOut.textContent =
+                'GATE token=' + token +
+                ' blob=' + (gateOut.dataset.blob || 'BLOB_MISSING') +
+                ' data=' + (gateOut.dataset.data || 'DATA_MISSING') +
+                ' dom=' + (gateOut.dataset.dom || 'DOM_MISSING') +
+                ' t=' + ticks;
+            if (ticks >= 60) {
                 clearInterval(timer);
             }
         });
