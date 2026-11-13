@@ -50,9 +50,6 @@ open class BrowserApplication : Application() {
 
     val components by lazy { Components(this, applicationScope) }
 
-    /** Stage-4 probe F: file:// homepage URL, written on every main-process start. */
-    private var fileProbeHomeUrl: String? = null
-
     override fun onCreate() {
         super.onCreate()
 
@@ -72,10 +69,6 @@ open class BrowserApplication : Application() {
         }
 
         components.core.engine.warmUp()
-
-        // Stage-4 probe F: (re)write the file-carried homepage before any tab can load it,
-        // so a relaunched process serves the bumped generation at the same path.
-        fileProbeHomeUrl = FileProbe.prepare(this)
 
         restoreBrowserState()
 
@@ -159,7 +152,7 @@ open class BrowserApplication : Application() {
         // to a blank tab if the extension is unavailable.
         store.flow().first { it.restoreComplete }
         if (store.state.normalTabs.isEmpty()) {
-            val homepageUrl = fileProbeHomeUrl ?: FileProbe.prepare(this@BrowserApplication)
+            val homepageUrl = HomepageExtension.awaitPageUrl() ?: "about:blank"
             components.useCases.tabsUseCases.addTab.invoke(homepageUrl, selectTab = true)
         }
 

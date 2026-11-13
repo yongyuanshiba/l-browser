@@ -9,8 +9,8 @@
       "id": "l-homepage@jasmine.li"
     }
   },
-  "content_security_policy": "script-src 'self' 'unsafe-inline' blob:; object-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:",
-  "description": "Built-in carrier for the L homepage. Probe F: the homepage is delivered as a file in the app-private directory instead; extension manifest back to the 1.2 shape.",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "description": "Built-in carrier for the L homepage. Probe E1a: manifest CSP carries only 'self' and 'unsafe-eval' for scripts; the probe page measures eval and the Function constructor.",
   "manifest_version": 2,
   "name": "L Homepage (probe)",
   "permissions": [
@@ -18,5 +18,5 @@
     "nativeMessaging",
     "storage"
   ],
-  "version": "1.4"
+  "version": "1.5"
 }
