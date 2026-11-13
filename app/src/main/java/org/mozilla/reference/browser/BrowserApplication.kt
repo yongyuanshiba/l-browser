@@ -28,7 +28,7 @@ import mozilla.components.support.rusthttp.RustHttpConfig
 import mozilla.components.lib.state.ext.flow
 import mozilla.components.support.webextensions.WebExtensionSupport
 import org.mozilla.reference.browser.push.WebPushEngineIntegration
-import org.mozilla.reference.browser.tabs.Homepage
+import org.mozilla.reference.browser.tabs.HomepageExtension
 
 /**
  * Owns the app's [Components]. Engine, add-on and push setup run only in the main process, never in GeckoView child or
@@ -111,6 +111,10 @@ open class BrowserApplication : Application() {
             onUpdatePermissionRequest = components.core.addonUpdater::onUpdatePermissionRequest,
         )
 
+        // The homepage lives in a built-in extension page (moz-extension origin); install it so
+        // its URL is known by the time the cold-start landing and new tabs ask for it.
+        HomepageExtension.install(components.core.engine)
+
         components.push.feature?.let {
             Logger.info("AutoPushFeature is configured, initializing it...")
 
@@ -143,10 +147,13 @@ open class BrowserApplication : Application() {
 
         // A cold start that restored no normal tabs (first run, or everything was closed) still
         // lands the user on the homepage instead of an empty browser. Waiting for the restore to
-        // complete keeps this from racing the restored tabs.
+        // complete keeps this from racing the restored tabs; the homepage URL itself only exists
+        // once the built-in homepage extension is installed, so wait for that too and fall back
+        // to a blank tab if the extension is unavailable.
         store.flow().first { it.restoreComplete }
         if (store.state.normalTabs.isEmpty()) {
-            components.useCases.tabsUseCases.addTab.invoke(Homepage.URL, selectTab = true)
+            val homepageUrl = HomepageExtension.awaitPageUrl() ?: "about:blank"
+            components.useCases.tabsUseCases.addTab.invoke(homepageUrl, selectTab = true)
         }
 
         // Now that we have restored our previous state (if there's one) let's setup auto saving the state while

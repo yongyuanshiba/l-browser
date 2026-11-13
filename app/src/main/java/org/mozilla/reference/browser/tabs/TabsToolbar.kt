@@ -35,7 +35,14 @@ constructor(
                 R.id.newTab -> {
                     when (isPrivateTray) {
                         true -> tabsUseCases.addTab.invoke("about:privatebrowsing", selectTab = true, private = true)
-                        false -> tabsUseCases.addTab.invoke(Homepage.URL, selectTab = true)
+                        // The homepage is an extension page; its URL only exists once the
+                        // built-in extension is installed. Before that (or if the install
+                        // failed) a blank tab is the safe landing.
+                        false ->
+                            tabsUseCases.addTab.invoke(
+                                HomepageExtension.pageUrl ?: "about:blank",
+                                selectTab = true,
+                            )
                     }
                     closeTabsTray?.invoke()
                 }
