@@ -6,6 +6,7 @@ package org.mozilla.reference.browser.siterules
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -36,6 +37,7 @@ data class SiteRule(
 object SiteRules {
     private const val PREFS_NAME = "site_rules"
     private const val KEY_RULES = "rules_json"
+    private const val KEY_PRESETS_SEEDED = "presets_seeded_v1"
 
     /** All stored rules, in storage order. Corrupt content degrades to an empty list. */
     fun load(context: Context): List<SiteRule> {
@@ -45,6 +47,40 @@ object SiteRules {
             List(array.length()) { index -> array.getJSONObject(index).toRule() }
         }.getOrDefault(emptyList())
     }
+
+    /**
+     * Seeds the built-in presets exactly once: the Douyin hosts get a Chrome UA override
+     * (stage-5 group A against the share-link wall). Hosts the user already has a rule for
+     * are left untouched, and once seeded the flag stays set, so deleting a preset rule
+     * does not resurrect it.
+     */
+    fun ensurePresets(context: Context) {
+        val preferences = prefs(context)
+        if (preferences.getBoolean(KEY_PRESETS_SEEDED, false)) {
+            return
+        }
+        val rules = load(context).toMutableList()
+        for (preset in presets()) {
+            if (rules.none { it.host == preset.host }) {
+                rules += preset
+            }
+        }
+        save(context, rules)
+        preferences.edit().putBoolean(KEY_PRESETS_SEEDED, true).apply()
+    }
+
+    private fun presets(): List<SiteRule> {
+        val chromeUa = chromeUserAgent()
+        return listOf(
+            SiteRule(host = "douyin.com", userAgent = chromeUa),
+            SiteRule(host = "iesdouyin.com", userAgent = chromeUa),
+        )
+    }
+
+    /** A current-looking Chrome-on-Android UA built from this device's model and OS. */
+    private fun chromeUserAgent(): String =
+        "Mozilla/5.0 (Linux; Android ${Build.VERSION.RELEASE}; ${Build.MODEL}) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
 
     /** Replaces the whole rule set. */
     fun save(

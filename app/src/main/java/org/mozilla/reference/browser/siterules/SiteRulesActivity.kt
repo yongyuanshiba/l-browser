@@ -61,6 +61,7 @@ class SiteRulesActivity : AppCompatActivity() {
     }
 
     private fun refresh() {
+        SiteRules.ensurePresets(this)
         rules = SiteRules.load(this)
         val rows =
             rules.map { rule ->

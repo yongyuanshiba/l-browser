@@ -55,6 +55,7 @@ class SiteRulesFeature(
     private var appliedDark: Boolean? = null
 
     override fun start() {
+        SiteRules.ensurePresets(context)
         job?.cancel()
         job =
             scope.launch {
