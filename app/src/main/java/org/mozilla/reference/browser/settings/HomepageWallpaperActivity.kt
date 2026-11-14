@@ -22,12 +22,11 @@ import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.mozilla.reference.browser.tabs.Homepage
 
 /**
  * The homepage wallpaper page: pick an image and it becomes the homepage's background.
- * The picked image is downscaled and stored in the app's files directory (see
- * [Homepage.homepageWallpaperFile]); [Homepage] inlines it when assembling the homepage.
+ * The picked image is downscaled and stored in the app's files directory;
+ * Homepage inlines it when assembling the homepage.
  * Clearing deletes the stored copy and the homepage goes back to its plain background.
  */
 class HomepageWallpaperActivity : AppCompatActivity() {
@@ -87,7 +86,7 @@ class HomepageWallpaperActivity : AppCompatActivity() {
     }
 
     private fun refresh() {
-        val file = Homepage.homepageWallpaperFile(this)
+        val file = wallpaperFile()
         val set = file.isFile && file.length() > 0
         statusView.text = if (set) "当前壁纸预览：" else "当前未设置壁纸"
         clearButton.isEnabled = set
@@ -100,7 +99,7 @@ class HomepageWallpaperActivity : AppCompatActivity() {
                 withContext(Dispatchers.IO) {
                     runCatching {
                         val bitmap = decodeSampled(uri) ?: error("undecodable image")
-                        val file = Homepage.homepageWallpaperFile(this@HomepageWallpaperActivity)
+                        val file = wallpaperFile()
                         file.parentFile?.mkdirs()
                         val temp = File(file.parentFile, "wallpaper.tmp")
                         FileOutputStream(temp).use { out ->
@@ -149,7 +148,7 @@ class HomepageWallpaperActivity : AppCompatActivity() {
     }
 
     private fun clearWallpaper() {
-        val file = Homepage.homepageWallpaperFile(this)
+        val file = wallpaperFile()
         if (file.exists()) {
             file.delete()
         }
@@ -158,6 +157,9 @@ class HomepageWallpaperActivity : AppCompatActivity() {
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    /** Where the homepage wallpaper lives in the app's files directory, once set. */
+    private fun wallpaperFile(): File = File(File(filesDir, "homepage"), "wallpaper.jpg")
 
     companion object {
         private const val PREVIEW_HEIGHT_DP = 240
