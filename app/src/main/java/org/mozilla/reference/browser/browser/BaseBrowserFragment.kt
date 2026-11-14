@@ -57,6 +57,7 @@ import org.mozilla.reference.browser.downloads.DownloadService
 import org.mozilla.reference.browser.ext.getPreferenceKey
 import org.mozilla.reference.browser.ext.requireComponents
 import org.mozilla.reference.browser.pip.PictureInPictureIntegration
+import org.mozilla.reference.browser.siterules.SiteRulesFeature
 import org.mozilla.reference.browser.tabs.LastTabFeature
 
 private const val BOTTOM_TOOLBAR_HEIGHT = 0
@@ -83,6 +84,7 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
     private val webAuthnFeature = ViewBoundFeatureWrapper<WebAuthnFeature>()
     private val fullScreenMediaSessionFeature = ViewBoundFeatureWrapper<MediaSessionFullscreenFeature>()
     private val lastTabFeature = ViewBoundFeatureWrapper<LastTabFeature>()
+    private val siteRulesFeature = ViewBoundFeatureWrapper<SiteRulesFeature>()
     private val screenOrientationFeature = ViewBoundFeatureWrapper<ScreenOrientationFeature>()
 
     private val engineView: EngineView
@@ -200,6 +202,17 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
                 requireComponents.core.store,
                 requireComponents.useCases.sessionUseCases.reload,
                 swipeRefresh,
+            ),
+        )
+
+        siteRulesFeature.bind(
+            view,
+            SiteRulesFeature(
+                requireContext(),
+                requireComponents.core.store,
+                requireComponents.core.engine,
+                requireComponents.useCases.sessionUseCases,
+                sessionId,
             ),
         )
 
