@@ -172,6 +172,11 @@
             android:label="书签" />
 
         <activity
+            android:name=".siterules.SiteRulesActivity"
+            android:exported="false"
+            android:label="站点规则" />
+
+        <activity
             android:name=".qr.ScanActivity"
             android:exported="false"
             android:label="扫码" />

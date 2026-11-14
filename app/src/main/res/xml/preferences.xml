@@ -83,6 +83,20 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="站点规则">
+
+        <androidx.preference.Preference
+            android:key="pref_key_site_rules"
+            android:title="站点规则管理"
+            android:summary="按域名设置 UA 伪装、桌面模式、强制暗色与兼容内核">
+            <intent
+                android:targetClass="org.mozilla.reference.browser.siterules.SiteRulesActivity"
+                android:targetPackage="com.jasmine.li" />
+        </androidx.preference.Preference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/mozilla_category">
 
         <androidx.preference.Preference
