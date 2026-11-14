@@ -61,8 +61,7 @@
 
     <androidx.preference.Preference
         android:key="pref_key_open_bookmarks"
-        android:title="书签管理"
-        app:allowDividerAbove="true">
+        android:title="书签管理">
         <intent
             android:targetClass="org.mozilla.reference.browser.bookmarks.BookmarksActivity"
             android:targetPackage="com.jasmine.li" />
