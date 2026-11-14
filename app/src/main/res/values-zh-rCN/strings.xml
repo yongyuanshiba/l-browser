@@ -175,4 +175,19 @@
     <string name="toast_customize_addon_collection_done">附加组件合集已修改。正在退出应用以便应用更改…</string>
     <!-- Prompt shown on the QR scanner screen. -->
     <string name="scan_qr_hint">将二维码放入框内</string>
+
+    <!-- Menu items and content descriptions moved from hardcoded text (i18n round) -->
+    <string name="menu_request_desktop_site">请求桌面版网站</string>
+    <string name="menu_add_to_homescreen">添加到主屏幕</string>
+    <string name="menu_find_in_page">页内查找</string>
+    <string name="menu_addons">附加组件</string>
+    <string name="menu_report_issue">报告问题</string>
+    <string name="menu_open_in_browser">在浏览器中打开</string>
+    <string name="cd_forward">前进</string>
+    <string name="cd_refresh">刷新</string>
+    <string name="cd_stop">停止</string>
+    <string name="cd_reader_view_enable">启用阅读视图</string>
+    <string name="cd_reader_view_disable">停用阅读视图</string>
+    <string name="cd_tabs">标签页</string>
+    <string name="cd_private_tabs">隐私标签页</string>
 </resources>

@@ -213,4 +213,19 @@
     <string name="toast_customize_addon_collection_done">Add-on collection modified. Quitting the application to apply changes…</string>
     <!-- Prompt shown on the QR scanner screen. -->
     <string name="scan_qr_hint">将二维码放入框内</string>
+
+    <!-- Menu items and content descriptions moved from hardcoded text (i18n round) -->
+    <string name="menu_request_desktop_site">Request desktop site</string>
+    <string name="menu_add_to_homescreen">Add to homescreen</string>
+    <string name="menu_find_in_page">Find in Page</string>
+    <string name="menu_addons">Add-ons</string>
+    <string name="menu_report_issue">Report issue</string>
+    <string name="menu_open_in_browser">Open in Browser</string>
+    <string name="cd_forward">Forward</string>
+    <string name="cd_refresh">Refresh</string>
+    <string name="cd_stop">Stop</string>
+    <string name="cd_reader_view_enable">Enable Reader View</string>
+    <string name="cd_reader_view_disable">Disable Reader View</string>
+    <string name="cd_tabs">Tabs</string>
+    <string name="cd_private_tabs">Private tabs</string>
 </resources>

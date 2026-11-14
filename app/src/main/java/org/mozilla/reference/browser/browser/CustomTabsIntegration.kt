@@ -69,7 +69,7 @@ class CustomTabsIntegration(
 
         val forward =
             SmallMenuCandidate(
-                contentDescription = "Forward",
+                contentDescription = context.getString(R.string.cd_forward),
                 icon =
                     DrawableMenuIcon(
                         context,
@@ -82,7 +82,7 @@ class CustomTabsIntegration(
 
         val refresh =
             SmallMenuCandidate(
-                contentDescription = "Refresh",
+                contentDescription = context.getString(R.string.cd_refresh),
                 icon =
                     DrawableMenuIcon(
                         context,
@@ -95,7 +95,7 @@ class CustomTabsIntegration(
 
         val stop =
             SmallMenuCandidate(
-                contentDescription = "Stop",
+                contentDescription = context.getString(R.string.cd_stop),
                 icon =
                     DrawableMenuIcon(
                         context,
@@ -117,16 +117,16 @@ class CustomTabsIntegration(
                 context.share(url)
             },
             CompoundMenuCandidate(
-                text = "Request desktop site",
+                text = context.getString(R.string.menu_request_desktop_site),
                 isChecked = sessionState?.content?.desktopMode == true,
                 end = CompoundMenuCandidate.ButtonType.SWITCH,
             ) { checked ->
                 sessionUseCases.requestDesktopSite.invoke(checked, sessionState?.id)
             },
-            TextMenuCandidate("Find in Page") {
+            TextMenuCandidate(context.getString(R.string.menu_find_in_page)) {
                 FindInPageIntegration.launch?.invoke()
             },
-            TextMenuCandidate("Open in Browser") {
+            TextMenuCandidate(context.getString(R.string.menu_open_in_browser)) {
                 // Release the session from this view so that it can immediately be rendered by a different view
                 engineView.release()
 

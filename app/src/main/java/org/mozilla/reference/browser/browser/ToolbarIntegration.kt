@@ -79,7 +79,7 @@ class ToolbarIntegration(
 
         val forward =
             SmallMenuCandidate(
-                contentDescription = "Forward",
+                contentDescription = context.getString(R.string.cd_forward),
                 icon =
                     DrawableMenuIcon(
                         context,
@@ -93,7 +93,7 @@ class ToolbarIntegration(
 
         val refresh =
             SmallMenuCandidate(
-                contentDescription = "Refresh",
+                contentDescription = context.getString(R.string.cd_refresh),
                 icon =
                     DrawableMenuIcon(
                         context,
@@ -106,7 +106,7 @@ class ToolbarIntegration(
 
         val stop =
             SmallMenuCandidate(
-                contentDescription = "Stop",
+                contentDescription = context.getString(R.string.cd_stop),
                 icon =
                     DrawableMenuIcon(
                         context,
@@ -128,7 +128,7 @@ class ToolbarIntegration(
                 context.share(url)
             },
             CompoundMenuCandidate(
-                text = "Request desktop site",
+                text = context.getString(R.string.menu_request_desktop_site),
                 isChecked = sessionState.content.desktopMode,
                 end = CompoundMenuCandidate.ButtonType.SWITCH,
             ) { checked ->
@@ -136,7 +136,7 @@ class ToolbarIntegration(
             },
             if (webAppUseCases.isPinningSupported()) {
                 TextMenuCandidate(
-                    text = "Add to homescreen",
+                    text = context.getString(R.string.menu_add_to_homescreen),
                     containerStyle = ContainerStyle(isVisible = webAppUseCases.isPinningSupported()),
                 ) {
                     scope.launch { webAppUseCases.addToHomescreen() }
@@ -144,7 +144,7 @@ class ToolbarIntegration(
             } else {
                 null
             },
-            TextMenuCandidate(text = "Find in Page") {
+            TextMenuCandidate(text = context.getString(R.string.menu_find_in_page)) {
                 FindInPageIntegration.launch?.invoke()
             },
             TextMenuCandidate(text = "加入书签") {
@@ -190,15 +190,15 @@ class ToolbarIntegration(
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 },
-                TextMenuCandidate(text = "Add-ons") {
+                TextMenuCandidate(text = context.getString(R.string.menu_addons)) {
                     val intent = Intent(context, AddonsActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 },
-                TextMenuCandidate(text = "Report issue") {
+                TextMenuCandidate(text = context.getString(R.string.menu_report_issue)) {
                     tabsUseCases.addTab(url = "https://github.com/mozilla-mobile/reference-browser/issues/new")
                 },
-                TextMenuCandidate(text = "Settings") {
+                TextMenuCandidate(text = context.getString(R.string.settings)) {
                     val intent = Intent(context, SettingsActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)

@@ -34,13 +34,13 @@ constructor(
     init {
         normalTab =
             newTab().apply {
-                contentDescription = "Tabs"
+                contentDescription = context.getString(R.string.cd_tabs)
                 icon = resources.getThemedDrawable(iconsR.drawable.mozac_ic_tab_24)
             }
 
         privateTab =
             newTab().apply {
-                contentDescription = "Private tabs"
+                contentDescription = context.getString(R.string.cd_private_tabs)
                 icon = resources.getThemedDrawable(iconsR.drawable.mozac_ic_private_mode_24)
             }
 

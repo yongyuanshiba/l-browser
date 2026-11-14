@@ -43,8 +43,8 @@ class ReaderViewIntegration(
                 ContextCompat.getDrawable(context, iconsR.drawable.mozac_ic_reader_view_24)!!.mutate().apply {
                     setTint(ContextCompat.getColor(context, colorsR.color.photonBlue40))
                 },
-            contentDescription = "Enable Reader View",
-            contentDescriptionSelected = "Disable Reader View",
+            contentDescription = context.getString(R.string.cd_reader_view_enable),
+            contentDescriptionSelected = context.getString(R.string.cd_reader_view_disable),
             selected = store.state.selectedTab?.readerState?.active ?: false,
             visible = { readerViewButtonVisible },
         ) { enabled ->
