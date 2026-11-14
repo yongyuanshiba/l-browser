@@ -15,6 +15,7 @@ import mozilla.components.concept.engine.request.ErrorType
 import mozilla.components.concept.engine.request.RequestInterceptor
 import org.mozilla.reference.browser.bookmarks.BookmarksActivity
 import org.mozilla.reference.browser.ext.components
+import org.mozilla.reference.browser.qr.ScanActivity
 import org.mozilla.reference.browser.tabs.PrivatePage
 
 class AppRequestInterceptor(private val context: Context) : RequestInterceptor {
@@ -33,6 +34,13 @@ class AppRequestInterceptor(private val context: Context) : RequestInterceptor {
             // so the load itself is denied and the screen is opened instead.
             "via://bookmarks", "v://bookmarks" -> {
                 val intent = Intent(context, BookmarksActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                RequestInterceptor.InterceptionResponse.Deny
+            }
+
+            "via://scanner", "v://scanner" -> {
+                val intent = Intent(context, ScanActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
                 RequestInterceptor.InterceptionResponse.Deny

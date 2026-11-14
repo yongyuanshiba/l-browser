@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.WebExtensionState
 import mozilla.components.concept.engine.EngineView
 import mozilla.components.feature.intent.ext.EXTRA_SESSION_ID
@@ -31,6 +32,7 @@ import org.mozilla.reference.browser.addons.WebExtensionActionPopupActivity
 import org.mozilla.reference.browser.browser.BrowserFragment
 import org.mozilla.reference.browser.browser.CrashIntegration
 import org.mozilla.reference.browser.ext.components
+import org.mozilla.reference.browser.qr.ScanResultHolder
 
 /** Activity that holds the [BrowserFragment]. */
 open class BrowserActivity : AppCompatActivity() {
@@ -98,6 +100,44 @@ open class BrowserActivity : AppCompatActivity() {
         }
 
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // A finished QR scan parks its result here (the scanner is launched from the request
+        // interceptor, which has no activity-result channel); consume it exactly once.
+        ScanResultHolder.pendingResult?.let { result ->
+            ScanResultHolder.pendingResult = null
+            openScanResult(result)
+        }
+    }
+
+    /** Opens a scan result: URLs navigate directly, anything else goes to the default search. */
+    private fun openScanResult(result: String) {
+        val text = result.trim()
+        if (text.isEmpty()) {
+            return
+        }
+        val url =
+            when {
+                text.matches(Regex("^[a-zA-Z][a-zA-Z0-9+.\\-]*://.*")) -> text
+                !text.contains(Regex("\\s")) && text.matches(Regex("^[^\\s/]+\\.[a-zA-Z]{2,}([/?#].*)?$")) ->
+                    "https://$text"
+                else -> null
+            }
+        if (url != null) {
+            if (components.core.store.state.selectedTab != null) {
+                components.useCases.sessionUseCases.loadUrl.invoke(url)
+            } else {
+                components.useCases.tabsUseCases.addTab.invoke(url, selectTab = true)
+            }
+        } else {
+            components.useCases.searchUseCases.defaultSearch.invoke(
+                searchTerms = text,
+                searchEngine = null,
+                parentSessionId = null,
+            )
+        }
     }
 
     override fun onDestroy() {

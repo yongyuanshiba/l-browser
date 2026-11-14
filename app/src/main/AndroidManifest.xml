@@ -171,6 +171,11 @@
             android:exported="false"
             android:label="书签" />
 
+        <activity
+            android:name=".qr.ScanActivity"
+            android:exported="false"
+            android:label="扫码" />
+
         <activity android:name=".autofill.AutofillUnlockActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
