@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import mozilla.components.browser.domains.autocomplete.ShippedDomainsProvider
 import mozilla.components.browser.menu2.BrowserMenuController
+import mozilla.components.browser.state.action.TranslationsAction
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.store.BrowserStore
@@ -147,6 +148,24 @@ class ToolbarIntegration(
             TextMenuCandidate(text = context.getString(R.string.menu_find_in_page)) {
                 FindInPageIntegration.launch?.invoke()
             },
+            if (sessionState.content.url.startsWith("http://") ||
+                sessionState.content.url.startsWith("https://")
+            ) {
+                TextMenuCandidate(
+                    text =
+                        context.getString(
+                            if (sessionState.translationsState.isTranslated) {
+                                R.string.menu_show_original
+                            } else {
+                                R.string.menu_translate_page
+                            },
+                        ),
+                ) {
+                    onTranslateMenuClicked(sessionState)
+                }
+            } else {
+                null
+            },
             TextMenuCandidate(text = "加入书签") {
                 val url = sessionState.content.url
                 val title = sessionState.content.title.ifBlank { url }
@@ -163,6 +182,40 @@ class ToolbarIntegration(
                 }
             },
         )
+
+    /**
+     * Menu entry point for the built-in (Bergamot) page translation: translates the current
+     * page into the engine's preferred target language, or restores the original page when
+     * it is already translated. All state flows through [TranslationsAction]; the actual
+     * work (language detection, model download from Remote Settings, translation) is done
+     * by the engine via the translations middleware registered in Core.
+     */
+    private fun onTranslateMenuClicked(sessionState: SessionState) {
+        val tabId = sessionState.id
+        if (sessionState.translationsState.isTranslated) {
+            store.dispatch(TranslationsAction.TranslateRestoreAction(tabId))
+            return
+        }
+        if (store.state.translationEngine.isEngineSupported == false) {
+            Toast.makeText(context, R.string.toast_translate_unsupported, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val detected = sessionState.translationsState.translationEngineState?.detectedLanguages
+        val fromLanguage = detected?.documentLangTag
+        if (fromLanguage.isNullOrBlank()) {
+            Toast.makeText(context, R.string.toast_translate_no_language, Toast.LENGTH_SHORT).show()
+            return
+        }
+        store.dispatch(
+            TranslationsAction.TranslateAction(
+                tabId = tabId,
+                fromLanguage = fromLanguage,
+                toLanguage = detected.userPreferredLangTag ?: DEFAULT_TRANSLATION_TARGET_LANGUAGE,
+                options = null,
+            ),
+        )
+        Toast.makeText(context, R.string.toast_translate_started, Toast.LENGTH_SHORT).show()
+    }
 
     private fun menuItems(sessionState: SessionState?): List<MenuCandidate> {
         val sessionMenuItems =
@@ -292,4 +345,9 @@ class ToolbarIntegration(
     }
 
     override fun onBackPressed(): Boolean = toolbarFeature.onBackPressed()
+
+    private companion object {
+        /** Fallback translation target when the engine has no preferred language yet. */
+        const val DEFAULT_TRANSLATION_TARGET_LANGUAGE = "zh-Hans"
+    }
 }

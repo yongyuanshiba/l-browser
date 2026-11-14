@@ -14,6 +14,7 @@ import mozilla.components.browser.engine.gecko.permission.GeckoSitePermissionsSt
 import mozilla.components.browser.icons.BrowserIcons
 import mozilla.components.browser.session.storage.SessionStorage
 import mozilla.components.browser.state.engine.EngineMiddleware
+import mozilla.components.browser.state.engine.middleware.TranslationsMiddleware
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.browser.storage.sync.PlacesBookmarksStorage
@@ -121,6 +122,11 @@ class Core(
                         ),
                         SearchMiddleware(context),
                         RecordingDevicesMiddleware(context, context.components.notificationsDelegate),
+                        TranslationsMiddleware(
+                            engine = engine,
+                            scope = applicationScope,
+                            isTranslationsEnabled = { true },
+                        ),
                     ) + EngineMiddleware.create(engine)
             )
             .apply {

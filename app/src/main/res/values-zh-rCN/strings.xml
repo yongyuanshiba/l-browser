@@ -183,6 +183,11 @@
     <string name="menu_addons">附加组件</string>
     <string name="menu_report_issue">报告问题</string>
     <string name="menu_open_in_browser">在浏览器中打开</string>
+    <string name="menu_translate_page">翻译此页</string>
+    <string name="menu_show_original">显示原文</string>
+    <string name="toast_translate_unsupported">当前设备不支持内置翻译</string>
+    <string name="toast_translate_no_language">尚未检测到页面语言</string>
+    <string name="toast_translate_started">正在翻译…</string>
     <string name="cd_forward">前进</string>
     <string name="cd_refresh">刷新</string>
     <string name="cd_stop">停止</string>

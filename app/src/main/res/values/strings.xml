@@ -221,6 +221,11 @@
     <string name="menu_addons">Add-ons</string>
     <string name="menu_report_issue">Report issue</string>
     <string name="menu_open_in_browser">Open in Browser</string>
+    <string name="menu_translate_page">Translate page</string>
+    <string name="menu_show_original">Show original</string>
+    <string name="toast_translate_unsupported">Built-in translation is not supported on this device</string>
+    <string name="toast_translate_no_language">No page language detected yet</string>
+    <string name="toast_translate_started">Translating…</string>
     <string name="cd_forward">Forward</string>
     <string name="cd_refresh">Refresh</string>
     <string name="cd_stop">Stop</string>
