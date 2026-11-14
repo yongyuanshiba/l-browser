@@ -70,7 +70,7 @@ object BuiltinExtensions {
                 label = "Violentmonkey",
                 // The XPI reaches the repo through the browser web upload (binary files cannot
                 // go through the connector); flip to true in the same step that lands it.
-                shipped = false,
+                shipped = true,
             ),
         )
 
