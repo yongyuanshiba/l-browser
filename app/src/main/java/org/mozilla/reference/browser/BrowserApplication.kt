@@ -27,6 +27,7 @@ import mozilla.components.support.ktx.android.content.runOnlyInMainProcess
 import mozilla.components.support.rusthttp.RustHttpConfig
 import mozilla.components.lib.state.ext.flow
 import mozilla.components.support.webextensions.WebExtensionSupport
+import org.mozilla.reference.browser.extensions.BuiltinExtensions
 import org.mozilla.reference.browser.push.WebPushEngineIntegration
 import org.mozilla.reference.browser.tabs.HomepageExtension
 
@@ -114,6 +115,11 @@ open class BrowserApplication : Application() {
         // The homepage lives in a built-in extension page (moz-extension origin); install it so
         // its URL is known by the time the cold-start landing and new tabs ask for it.
         HomepageExtension.install(this, components.core.engine)
+
+        // Third-party built-ins (uBlock Origin, Violentmonkey): the built-in channel installs
+        // the bundled official AMO copies; their updates arrive via AMO (channel A — the
+        // update_url in their manifests plus the AddonUpdater registration above).
+        BuiltinExtensions.install(components.core.engine)
 
         components.push.feature?.let {
             Logger.info("AutoPushFeature is configured, initializing it...")
