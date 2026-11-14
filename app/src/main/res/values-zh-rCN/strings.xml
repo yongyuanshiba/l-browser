@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<!-- 简体中文翻译：与 values/strings.xml 一一对应；格式化占位符（%s / %1$s）与原文严格一致。
+     基座英文名 Reference Browser 在面向用户的文案里按本应用名「L」译出。 -->
+<resources>
+    <string name="app_name">L</string>
+
+    <!-- Text shown in the toolbar if it is empty -->
+    <string name="toolbar_hint">搜索或输入网址</string>
+
+    <!-- Menu option on the toolbar to open a new tab-->
+    <string name="menu_action_add_tab">新建标签页</string>
+
+    <!-- Menu option on the toolbar to close all tabs-->
+    <string name="menu_action_close_tabs">关闭所有标签页</string>
+    <string name="menu_action_close_tabs_private">关闭隐私标签页</string>
+
+    <!-- Preference summary for settings related sign in -->
+    <string name="preferences_sign_in_summary">同步你的标签页和历史记录</string>
+
+    <!-- Preference summary for pairing sign in -->
+    <string name="preferences_pair_sign_in_summary">与 Firefox 桌面版配对</string>
+
+    <!-- Preference for settings related to changing the default browser -->
+    <string name="preferences_make_default_browser">设为默认浏览器</string>
+
+    <string name="preferences_compose_ui">使用实验性 Jetpack Compose 界面</string>
+
+    <string name="preferences_autofill">自动填充应用</string>
+    <string name="preferences_autofill_summary">在其他应用中自动填充账号和密码</string>
+
+    <!-- Preference enabling remote debugging -->
+    <string name="preferences_remote_debugging">通过 USB 远程调试</string>
+
+    <!-- Preference for enabling tracking protection in normal mode -->
+    <string name="preferences_tracking_protection_normal">在普通浏览模式下启用</string>
+
+    <!-- Preference for enabling tracking protection in private mode -->
+    <string name="preferences_tracking_protection_private">在隐私浏览模式下启用</string>
+
+    <!-- Preference for enabling global privacy control in normal mode -->
+    <string name="preferences_global_privacy_control">要求网站不要共享或出售我的数据</string>
+
+    <!-- Preference about page -->
+    <string name="preferences_about_page">关于</string>
+
+    <!-- Preference for signing in -->
+    <string name="sign_in">登录</string>
+
+    <!-- Preference for signing in -->
+    <string name="pair_sign_in">扫码登录</string>
+
+    <!-- Preference for signing out -->
+    <string name="sign_out">退出登录</string>
+
+    <!-- Preference summary showing last time synced -->
+    <string name="preferences_sync_last_synced_summary">上次同步：%s</string>
+
+    <!-- Preference summary showing never synced -->
+    <string name="preferences_sync_never_synced_summary">上次同步：从未</string>
+
+    <!-- Preference for privacy -->
+    <string name="privacy">隐私</string>
+
+    <!-- Preference summary for privacy -->
+    <string name="preferences_privacy_summary">跟踪、Cookie 与数据选项</string>
+
+    <!-- Preference for open links in apps -->
+    <string name="open_links_in_apps">在应用中打开链接</string>
+
+    <!-- Preference category for developer tools -->
+    <string name="developer_tools_category">开发者工具</string>
+
+    <!-- Preference category for Mozilla about/legal etc. -->
+    <string name="mozilla_category">Mozilla</string>
+
+    <!-- Preference category for DNS settings -->
+    <string name="dns_category">DNS 设置</string>
+
+    <!-- Preference for choosing how DNS names are resolved -->
+    <string name="preferences_dns_mode">解析方式</string>
+
+    <!-- DNS resolution option: always use the system resolver, browser DNS-over-HTTPS stays off -->
+    <string name="preferences_dns_mode_system">强制系统解析</string>
+
+    <!-- DNS resolution option: leave resolution to the browser engine's own defaults -->
+    <string name="preferences_dns_mode_browser_default">浏览器默认</string>
+
+    <!-- Status line shown under the DNS resolution choice while system DNS is in effect -->
+    <string name="preferences_dns_status_system">当前生效：强制系统解析。浏览器不使用 DNS-over-HTTPS，域名解析走系统解析器，系统的私人 DNS（DNS-over-TLS）配置生效。</string>
+
+    <!-- Status line shown under the DNS resolution choice while browser defaults are in effect -->
+    <string name="preferences_dns_status_browser_default">当前生效：浏览器默认。由浏览器引擎自行决定解析方式；若配置了 DNS-over-HTTPS，可能会被使用。</string>
+
+    <!-- Preference category for tracking protection -->
+    <string name="tracker_category">跟踪保护</string>
+
+    <!-- Menu option on the toolbar that takes you to settings page-->
+    <string name="settings">设置</string>
+
+    <!-- Menu option on the toolbar that takes you to synced tabs page-->
+    <string name="synced_tabs">已同步的标签页</string>
+
+    <!-- Menu option on the toolbar that takes you to privacy settings page-->
+    <string name="privacy_settings">隐私设置</string>
+
+    <!-- Menu option on the toolbar that takes you to pairing QR code page-->
+    <string name="pair_preferences">配对</string>
+    <string name="pair_instructions">在 Firefox 桌面版打开 firefox.com/pair 获取配对码</string>
+
+    <!-- Snackbar message when a non fatal crash happen-->
+    <string name="crash_report_non_fatal_message">抱歉，刚刚发生了一次崩溃</string>
+
+    <!-- Snackbar action button when a non fatal crash happen-->
+    <string name="crash_report_non_fatal_action">报告</string>
+
+    <!-- Private Browsing -->
+    <string name="private_browsing_title">隐私浏览</string>
+    <string name="private_browsing_body"><![CDATA[
+<h1>隐私浏览</h1>
+<p>在隐私窗口中浏览时，L <strong>不会保存</strong>：</p>
+<ul class="two-column">
+    <li>访问过的页面</li>
+    <li>搜索记录</li>
+    <li>Cookie</li>
+    <li>临时文件</li>
+</ul>
+<p>隐私浏览<strong>并不能让你在互联网上匿名</strong>。你的雇主或网络服务提供商仍能知道你访问了哪些页面。</p>
+<p class="about-info">进一步了解<a id="learnMore">隐私浏览</a>。</p>
+     ]]></string>
+
+    <!-- Title of the notification shown on app startup informing about the data policy -->
+    <string name="datareporting_notification_title">L</string>
+
+    <!-- Summary of the notification shown on app startup informing about the data policy -->
+    <string name="datareporting_notification_summary">为改进你的使用体验，L 会自动向 Mozilla 发送一些信息。</string>
+
+    <string name="default_notification_channel">浏览器</string>
+
+    <!-- About content -->
+    <string name="about_content"><![CDATA[
+<p>%1$s 让你自己做主。</p>
+<p>可以把它当作参考：
+    <br>&bull; 学习如何构建自己的浏览器。
+    <br>&bull; 帮忙让浏览器的开发变得更容易。
+    <br>&bull; 提交错误报告！
+</p>
+<p>%1$s 由 Mozilla 出品。我们的使命是建设一个健康、开放的互联网。<br/>
+    ]]></string>
+
+    <string name="menu_share_with">分享到…</string>
+    <string name="toast_copied">已复制！</string>
+
+    <!-- Synced Tabs -->
+    <string name="synced_tabs_connect_to_sync_account">使用 Firefox 账户连接。</string>
+
+    <!-- Reader View -->
+    <!-- Content description for the button that opens reader view appearance controls -->
+    <string name="reader_view_appearance_button">阅读视图外观</string>
+
+    <!-- Add-on Preferences -->
+    <!-- Preference to customize the configured AMO (addons.mozilla.org) collection -->
+    <string name="preferences_customize_amo_collection">自定义附加组件合集</string>
+    <!-- Button caption to confirm the add-on collection configuration -->
+    <string name="customize_addon_collection_ok">确定</string>
+    <!-- Button caption to abort the add-on collection configuration -->
+    <string name="customize_addon_collection_cancel">取消</string>
+    <!-- Hint displayed on input field for custom collection name -->
+    <string name="customize_addon_collection_hint">合集名称</string>
+    <!-- Hint displayed on input field for custom collection user ID-->
+    <string name="customize_addon_collection_user_hint">合集所有者（用户 ID）</string>
+    <!-- Toast shown after confirming the custom add-on collection configuration -->
+    <string name="toast_customize_addon_collection_done">附加组件合集已修改。正在退出应用以便应用更改…</string>
+    <!-- Prompt shown on the QR scanner screen. -->
+    <string name="scan_qr_hint">将二维码放入框内</string>
+</resources>
