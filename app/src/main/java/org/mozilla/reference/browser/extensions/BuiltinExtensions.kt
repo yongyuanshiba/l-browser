@@ -4,66 +4,180 @@
 
 package org.mozilla.reference.browser.extensions
 
+import android.content.Context
+import java.io.File
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.webextension.InstallationMethod
 import mozilla.components.support.base.log.logger.Logger
 
 /**
- * Installs the third-party extensions L ships as built-ins: uBlock Origin (content blocking)
- * and Violentmonkey (userscripts). Both are unpacked from the official AMO packages into
- * `assets/extensions/` at build time and installed through the same built-in channel the
- * homepage carrier uses (see HomepageExtension).
+ * Ships two third-party add-ons with the app — uBlock Origin (content blocking) and
+ * Violentmonkey (userscripts) — as their official AMO-signed XPI files, byte-identical to the
+ * AMO releases (versions pinned at intake; per-file hashes verified against the release).
  *
- * Why this channel, and what it implies for updates:
- * - The bundled copies are the official AMO builds (version pinned at intake, per-file
- *   hashes verified against the AMO release). The built-in channel is the initial-install
- *   vehicle only: GeckoView's built-in install (`ensureBuiltIn` under the Android
- *   Components wrapper) does not need the package to be signed, and on every start it
- *   compares the bundled manifest version against the installed one, installing the
- *   bundled copy when the version differs.
- * - Updates after install are AMO's job (owner decision, 2026-11-14: channel A). Each
- *   bundled manifest carries `browser_specific_settings.gecko.update_url` pointing at the
- *   AMO update service, and WebExtensionSupport registers every loaded extension with the
- *   stock AddonUpdater (see BrowserApplication), whose update-permission prompts surface
- *   to the user like those of any AMO-installed add-on.
- * - One interplay is stated plainly because it is not yet settled by observation: if an
- *   AMO update moves the installed version ahead of the bundled one, ensureBuiltIn's
- *   version comparison at the next start decides whether the AMO copy survives. Only the
- *   first real AMO update settles that; until then the AMO wiring is verified at config
- *   and log level only, and nobody claims an AMO update has been seen succeeding.
- * - The extensions keep their own dashboards and appear in the existing Add-ons UI like
- *   any installed add-on, so the user can inspect or disable them. Allowing them in
- *   private browsing is a separate, per-add-on switch (AddonManager) and is deliberately
- *   not forced here.
+ * How they get installed (route C, settled 2026-11-14 after the unpacked-folder route proved
+ * impossible to land through the available upload channels):
+ * - On first start, each shipped XPI is copied out of the APK assets into internal storage and
+ *   installed through the runtime's regular install call ([Engine.installWebExtension] with
+ *   [InstallationMethod.FROM_FILE]) — the same channel as a user installing an add-on from a
+ *   file. The installed add-on is an ordinary profile add-on: its AMO signature is verified by
+ *   the regular install path, it shows up in the Add-ons UI, and the user can remove it.
+ * - The copy step exists because the regular install call rejects `resource://` URLs outright
+ *   (verified in the AC 160 GeckoEngine: "url shouldn't be a resource url"), while the built-in
+ *   channel ([Engine.installBuiltInWebExtension], `ensureBuiltIn`) only accepts resource URLs
+ *   pointing at unpacked folders — and its every-start version comparison could fight store
+ *   updates. Neither stock call takes a bundled XPI as-is; copying the bytes out is the bridge.
+ * - Updates after install are AMO's job (owner decision, 2026-11-14: channel A). Neither
+ *   manifest carries an `update_url`, so the default AMO update host applies, and
+ *   WebExtensionSupport registers every loaded add-on with the stock AddonUpdater (see
+ *   BrowserApplication), update-permission prompts included.
+ * - Auto-install happens at most once per bundled version: a SharedPreferences marker is set
+ *   when the add-on is seen installed or an install succeeds. If the user uninstalls the
+ *   add-on it stays uninstalled; a later build of L shipping a newer bundled version gets its
+ *   own single attempt. A failed attempt leaves the marker unset, so the next start retries —
+ *   and every failure is only ever logged, never thrown into startup.
  */
 object BuiltinExtensions {
-    /** One bundled extension: fixed gecko id (must match its manifest) and APK location. */
-    private data class BundledExtension(val id: String, val location: String, val label: String)
+    /** One shipped add-on: fixed gecko id (must match its manifest), APK asset, bundled version. */
+    private data class BundledXpi(
+        val id: String,
+        val assetPath: String,
+        val version: String,
+        val label: String,
+        /** False while the XPI itself has not landed in the APK yet; the entry is then skipped. */
+        val shipped: Boolean,
+    )
 
     private val bundled =
         listOf(
-            BundledExtension(
+            BundledXpi(
                 id = "uBlock0@raymondhill.net",
-                location = "resource://android/assets/extensions/ublock-origin/",
+                assetPath = "extensions/ublock-origin.xpi",
+                version = "1.76.2",
                 label = "uBlock Origin",
+                shipped = true,
             ),
-            BundledExtension(
-                id = "{aecec67f-0d10-4fa7-b7ce-62d987b8b5bc}",
-                location = "resource://android/assets/extensions/violentmonkey/",
+            BundledXpi(
+                id = "{aecec67f-0d10-4fa7-b7ce-609a2db280cf}",
+                assetPath = "extensions/violentmonkey.xpi",
+                version = "2.50.0",
                 label = "Violentmonkey",
+                // The XPI reaches the repo through the browser web upload (binary files cannot
+                // go through the connector); flip to true in the same step that lands it.
+                shipped = false,
             ),
         )
 
-    /** Installs (or version-upgrades) every bundled extension. Called once, from BrowserApplication.onCreate. */
-    fun install(engine: Engine) {
+    private const val PREFS_NAME = "l_bundled_extensions"
+    private const val KEY_PREFIX = "auto_install_done_"
+
+    /** Asset copies are plain file IO; keep them off the main thread. */
+    private val installScope =
+        CoroutineScope(
+            SupervisorJob() +
+                Dispatchers.IO +
+                CoroutineExceptionHandler { _, throwable ->
+                    Logger.error("BuiltinExtensions: worker error: ${throwable.message}")
+                },
+        )
+
+    /** Entry point: called once, from BrowserApplication.onCreate. */
+    fun install(context: Context, engine: Engine) {
+        val appContext = context.applicationContext
         for (extension in bundled) {
-            engine.installBuiltInWebExtension(
-                id = extension.id,
-                url = extension.location,
+            if (!extension.shipped) {
+                Logger.info(
+                    "BuiltinExtensions: ${extension.label} bundle not shipped in this build; skipping",
+                )
+                continue
+            }
+            ensureAutoInstalled(appContext, engine, extension)
+        }
+    }
+
+    private fun ensureAutoInstalled(context: Context, engine: Engine, extension: BundledXpi) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val markerKey = KEY_PREFIX + extension.id + "_" + extension.version
+        engine.listInstalledWebExtensions(
+            onSuccess = { installed ->
+                val existing = installed.firstOrNull { it.id == extension.id }
+                when {
+                    existing != null -> {
+                        Logger.info(
+                            "BuiltinExtensions: ${extension.label} already installed " +
+                                "(version=${existing.getMetadata().version}); skipping auto-install",
+                        )
+                        if (!prefs.getBoolean(markerKey, false)) {
+                            prefs.edit().putBoolean(markerKey, true).apply()
+                        }
+                    }
+                    prefs.getBoolean(markerKey, false) -> {
+                        Logger.info(
+                            "BuiltinExtensions: ${extension.label} auto-install already done for " +
+                                "bundled ${extension.version} and the add-on is absent; not retrying",
+                        )
+                    }
+                    else -> {
+                        installScope.launch { copyAndInstall(context, engine, extension, markerKey) }
+                    }
+                }
+            },
+            onError = { throwable ->
+                Logger.error(
+                    "BuiltinExtensions: listing installed extensions failed: ${throwable.message}",
+                )
+            },
+        )
+    }
+
+    private suspend fun copyAndInstall(
+        context: Context,
+        engine: Engine,
+        extension: BundledXpi,
+        markerKey: String,
+    ) {
+        val targetDir = File(context.filesDir, "bundled-extensions").apply { mkdirs() }
+        val target = File(targetDir, extension.assetPath.substringAfterLast('/'))
+        val copied =
+            runCatching {
+                context.assets.open(extension.assetPath).use { input ->
+                    target.outputStream().use { output -> input.copyTo(output) }
+                }
+                target
+            }.getOrElse { throwable ->
+                // The code can land before the XPI itself (the bundle arrives through a separate
+                // upload step); a missing bundle is a log line, not a crash, and the marker
+                // stays unset so a later build that does ship it still gets its attempt.
+                Logger.error(
+                    "BuiltinExtensions: ${extension.label} bundled xpi unreadable " +
+                        "(${extension.assetPath}): ${throwable.message}",
+                )
+                return
+            }
+        Logger.info(
+            "BuiltinExtensions: installing ${extension.label} ${extension.version} " +
+                "from bundled xpi (${copied.length()} bytes)",
+        )
+        withContext(Dispatchers.Main) {
+            engine.installWebExtension(
+                url = copied.toURI().toString(),
+                installationMethod = InstallationMethod.FROM_FILE,
                 onSuccess = { installed ->
                     Logger.info(
                         "BuiltinExtensions: ${extension.label} ready " +
-                            "(id=${installed.id}, location=${installed.url})",
+                            "(id=${installed.id}, version=${installed.getMetadata().version})",
                     )
+                    context
+                        .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean(markerKey, true)
+                        .apply()
                 },
                 onError = { throwable ->
                     Logger.error(

@@ -116,10 +116,11 @@ open class BrowserApplication : Application() {
         // its URL is known by the time the cold-start landing and new tabs ask for it.
         HomepageExtension.install(this, components.core.engine)
 
-        // Third-party built-ins (uBlock Origin, Violentmonkey): the built-in channel installs
-        // the bundled official AMO copies; their updates arrive via AMO (channel A — the
-        // update_url in their manifests plus the AddonUpdater registration above).
-        BuiltinExtensions.install(components.core.engine)
+        // Third-party add-ons shipped as official AMO-signed XPIs (uBlock Origin, and
+        // Violentmonkey once its bundle lands): auto-installed once through the regular
+        // install channel on first start; afterwards they are ordinary add-ons whose updates
+        // arrive via AMO (channel A — the AddonUpdater registration above).
+        BuiltinExtensions.install(this, components.core.engine)
 
         components.push.feature?.let {
             Logger.info("AutoPushFeature is configured, initializing it...")
