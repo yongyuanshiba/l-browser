@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="第一部分（样式 CSS）"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/homepage_part1_edit"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_weight="1"
+        android:gravity="top|start"
+        android:hint="粘贴第一部分代码"
+        android:inputType="textMultiLine|textNoSuggestions"
+        android:textSize="13sp"
+        android:typeface="monospace" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="第二部分（脚本与内容 HTML）"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/homepage_part2_edit"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_weight="1"
+        android:gravity="top|start"
+        android:hint="粘贴第二部分代码"
+        android:inputType="textMultiLine|textNoSuggestions"
+        android:textSize="13sp"
+        android:typeface="monospace" />
+
+    <Button
+        android:id="@+id/homepage_code_save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="保存" />
+
+</LinearLayout>

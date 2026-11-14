@@ -27,6 +27,7 @@ import org.mozilla.reference.browser.EngineProvider
 import org.mozilla.reference.browser.R
 import org.mozilla.reference.browser.R.string.pref_key_about_page
 import org.mozilla.reference.browser.R.string.pref_key_dns_mode
+import org.mozilla.reference.browser.R.string.pref_key_homepage_code
 import org.mozilla.reference.browser.R.string.pref_key_dns_status
 import org.mozilla.reference.browser.R.string.pref_key_make_default_browser
 import org.mozilla.reference.browser.R.string.pref_key_override_amo_collection
@@ -71,6 +72,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val autofillPreferenceKey = requireContext().getPreferenceKey(R.string.pref_key_autofill)
         val dnsModeKey = requireContext().getPreferenceKey(pref_key_dns_mode)
         val dnsStatusKey = requireContext().getPreferenceKey(pref_key_dns_status)
+        val homepageCodeKey = requireContext().getPreferenceKey(pref_key_homepage_code)
 
         val preferenceMakeDefaultBrowser = findPreference<Preference>(makeDefaultBrowserKey)
         val preferenceRemoteDebugging = findPreference<SwitchPreferenceCompat>(remoteDebuggingKey)
@@ -80,6 +82,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val preferenceAutofill = findPreference<AutofillPreference>(autofillPreferenceKey)
         val preferenceDnsMode = findPreference<ListPreference>(dnsModeKey)
         val preferenceDnsStatus = findPreference<Preference>(dnsStatusKey)
+        val preferenceHomepageCode = findPreference<Preference>(homepageCodeKey)
 
         if (!AutofillPreference.isSupported(requireContext())) {
             preferenceAutofill?.isVisible = false
@@ -91,9 +94,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
         preferenceRemoteDebugging?.onPreferenceChangeListener = getChangeListenerForRemoteDebugging()
         preferenceDnsMode?.onPreferenceChangeListener = getChangeListenerForDnsMode(preferenceDnsMode, preferenceDnsStatus)
         updateDnsPreferences(preferenceDnsMode, preferenceDnsStatus, DnsSettings.currentMode(requireContext()))
+        preferenceHomepageCode?.onPreferenceClickListener = getClickListenerForHomepageCode()
         preferenceAboutPage?.onPreferenceClickListener = getAboutPageListener()
         preferencePrivacy?.onPreferenceClickListener = getClickListenerForPrivacy()
         preferenceCustomAddons?.onPreferenceClickListener = getClickListenerForCustomAddons()
+    }
+
+    private fun getClickListenerForHomepageCode(): OnPreferenceClickListener = OnPreferenceClickListener {
+        startActivity(Intent(requireContext(), HomepageCodeActivity::class.java))
+        true
     }
 
     private fun getClickListenerForMakeDefaultBrowser(): OnPreferenceClickListener = OnPreferenceClickListener {

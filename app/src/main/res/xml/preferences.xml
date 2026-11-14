@@ -59,13 +59,28 @@
 
     </PreferenceCategory>
 
-    <androidx.preference.Preference
-        android:key="pref_key_open_bookmarks"
-        android:title="书签管理">
-        <intent
-            android:targetClass="org.mozilla.reference.browser.bookmarks.BookmarksActivity"
-            android:targetPackage="com.jasmine.li" />
-    </androidx.preference.Preference>
+    <PreferenceCategory
+        android:title="主页">
+
+        <androidx.preference.SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="@string/pref_key_homepage_custom"
+            android:summary="开启后，主页会加载下面粘贴的两段自定义代码"
+            android:title="使用自定义代码" />
+
+        <androidx.preference.Preference
+            android:key="@string/pref_key_homepage_code"
+            android:title="主页代码" />
+
+        <androidx.preference.Preference
+            android:key="pref_key_open_bookmarks"
+            android:title="书签管理">
+            <intent
+                android:targetClass="org.mozilla.reference.browser.bookmarks.BookmarksActivity"
+                android:targetPackage="com.jasmine.li" />
+        </androidx.preference.Preference>
+
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:title="@string/mozilla_category">

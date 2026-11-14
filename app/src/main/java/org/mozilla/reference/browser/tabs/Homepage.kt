@@ -6,6 +6,7 @@ package org.mozilla.reference.browser.tabs
 
 import android.content.Context
 import android.net.Uri
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
@@ -14,19 +15,19 @@ import mozilla.components.concept.storage.BookmarkNodeType
 import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.reference.browser.R
 import org.mozilla.reference.browser.ext.components
+import org.mozilla.reference.browser.settings.Settings
 
 /**
- * Builds the `about:homepage` page, which the app serves itself (same pattern as [PrivatePage]).
+ * Builds the homepage document.
  *
- * The page is assembled from `res/raw/homepage.html` on every load: the skeleton ships the DOM contract
- * that user homepage code (written against the Via homepage) expects — the element ids/classes, plus a
- * head shim providing the `window.search`, `window.initGesture` and `u` globals that code relies on.
- * Later stages fill the remaining assembly tokens: bookmark boxes, and the user's own CSS/HTML layer.
+ * The document is assembled from `res/raw/homepage.html` on every request: the skeleton ships the
+ * DOM contract that user homepage code (written against the Via homepage) expects — the element
+ * ids/classes, plus a head shim providing the `window.search`, `window.initGesture` and `u` globals
+ * that code relies on. The homepage extension's shell page fetches the assembled document over the
+ * native message channel (see [HomepageExtension]) and writes it into place, so it lives on the
+ * extension's moz-extension origin — a real, profile-stable origin whose localStorage persists.
  */
 object Homepage {
-    /** The synthetic URL the interceptor serves this page under. */
-    const val URL = "about:homepage"
-
     /**
      * The search input's placeholder. The shim also exposes it as the global `u`: user homepage code
      * strips the placeholder text out of the input value with a regular expression built from `u`
@@ -49,8 +50,24 @@ object Homepage {
             .use { it.readText() }
             .replace("<!--L:SHIM-->", buildShim(context))
             .replace("<!--L:BOXES-->", buildBoxes(context))
-            .replace("/*L:PART1CSS*/", "")
-            .replace("<!--L:PART2-->", "")
+            .replace("/*L:PART1CSS*/", customPart(context, 1))
+            .replace("<!--L:PART2-->", customPart(context, 2))
+
+    /** Where one of the user's two homepage code parts lives in the app's files directory. */
+    fun homepageCodeFile(context: Context, part: Int): File =
+        File(File(context.filesDir, "homepage"), if (part == 1) "part1.css" else "part2.html")
+
+    /**
+     * The user's own homepage code for one part, or empty while the custom layer is switched off
+     * (or nothing was saved yet). Skeleton tokens are substituted before this runs, so user code is
+     * always the last thing inserted and is never itself scanned for assembly tokens.
+     */
+    private fun customPart(context: Context, part: Int): String {
+        if (!Settings.isHomepageCustomEnabled(context)) {
+            return ""
+        }
+        return runCatching { homepageCodeFile(context, part).readText() }.getOrDefault("")
+    }
 
     /**
      * The Places root GUID of the mobile bookmarks folder — where the app's "加入书签" action files
@@ -64,7 +81,7 @@ object Homepage {
      * is a contract: user homepage code selects `.box > [title]` and filters tiles on the link's
      * `title` attribute, reads the display text from `.title` and the host text from `.url`.
      *
-     * The interceptor calls this on an engine thread, so reading synchronously is safe; the read is
+     * Assembly runs on a background thread off the message handler, so reading synchronously is safe; the read is
      * still bounded so a stuck store can never hang a homepage load — it just renders the empty hint.
      */
     private fun buildBoxes(context: Context): String {

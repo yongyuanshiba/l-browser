@@ -67,4 +67,15 @@ object Settings {
                 context.getString(R.string.pref_key_dns_mode),
                 "system",
             ) ?: "system"
+
+    /**
+     * Whether the homepage's user code layer (the two pasted code parts) is switched on. Written by
+     * the settings page's switch into the same shared preferences; read on every homepage assembly.
+     */
+    fun isHomepageCustomEnabled(context: Context): Boolean =
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(
+                context.getString(R.string.pref_key_homepage_custom),
+                false,
+            )
 }
