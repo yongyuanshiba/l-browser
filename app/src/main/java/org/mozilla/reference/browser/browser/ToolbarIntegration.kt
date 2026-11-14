@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 import mozilla.components.browser.domains.autocomplete.ShippedDomainsProvider
 import mozilla.components.browser.menu2.BrowserMenuController
 import mozilla.components.browser.state.action.TranslationsAction
-import mozilla.components.browser.state.selector.normalTabs
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.store.BrowserStore
@@ -125,7 +124,7 @@ class ToolbarIntegration(
     private fun sessionMenuItems(sessionState: SessionState): List<MenuCandidate> =
         listOfNotNull(
             menuToolbar(sessionState),
-            TextMenuCandidate(text = context.getString(R.string.menu_share)) {
+            TextMenuCandidate("Share") {
                 val url = sessionState.content.url
                 context.share(url)
             },
@@ -233,19 +232,10 @@ class ToolbarIntegration(
                     // built-in extension is installed. Before that (or if the install
                     // failed) a blank tab is the safe landing.
                     val homepageUrl = HomepageExtension.pageUrl ?: "about:blank"
-                    val state = store.state
-                    val selected = state.selectedTab
-                    val existing =
-                        state.normalTabs.firstOrNull { it.content.url == homepageUrl }
-                    when {
-                        // Already there: reloading the shell page would throw the whole
-                        // document away and rebuild it for nothing.
-                        selected?.content?.url == homepageUrl -> Unit
-                        // A homepage tab already exists: switch to it and keep its
-                        // session (and its already-built document) alive.
-                        existing != null -> tabsUseCases.selectTab.invoke(existing.id)
-                        selected != null -> sessionUseCases.loadUrl.invoke(homepageUrl)
-                        else -> tabsUseCases.addTab.invoke(homepageUrl, selectTab = true)
+                    if (store.state.selectedTab != null) {
+                        sessionUseCases.loadUrl.invoke(homepageUrl)
+                    } else {
+                        tabsUseCases.addTab.invoke(homepageUrl, selectTab = true)
                     }
                 },
                 TextMenuCandidate(text = "书签") {

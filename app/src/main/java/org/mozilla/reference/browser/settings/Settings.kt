@@ -78,17 +78,4 @@ object Settings {
                 context.getString(R.string.pref_key_homepage_custom),
                 false,
             )
-
-    /**
-     * Whether the native header bar (page title + scan button) shows above the homepage.
-     * Written by the settings page's switch into the same shared preferences; read whenever
-     * the selected tab changes. Defaults to on, matching the environment the user's
-     * homepage comes from.
-     */
-    fun isHomepageHeaderEnabled(context: Context): Boolean =
-        PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean(
-                context.getString(R.string.pref_key_homepage_header),
-                true,
-            )
 }
