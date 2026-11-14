@@ -35,6 +35,17 @@ body {
     letter-spacing: 1px;
     color: #3c4652;
 }
+/* Anchor for the user-code logo (#logo only exists when custom code is pasted).
+   User CSS (part1) styles the logo's size/gradient and shifts it with
+   translate:-50% -55px, but never supplies left/top — in the environment the
+   code was written for, the base stylesheet anchors it here: horizontally
+   centered on #content, at the content block's top edge. Without this anchor
+   the absolutely-positioned logo falls back to its static position and lands
+   half off the left edge and above the viewport. */
+#logo {
+    left: 50%;
+    top: 0;
+}
 .search_part {
     margin: 0;
     width: 100%;
@@ -163,6 +174,53 @@ body {
     font-size: 13px;
     margin-top: 14px;
 }
+/* Custom-mode parity corrections. These apply only while user homepage code
+   is enabled (Homepage.kt adds class="l-custom" to <body> when either code
+   part is saved). User CSS is an override layer written against a base
+   stylesheet whose layout anchors differ from this skeleton's defaults in a
+   few places; the rules below restore the base behaviour the code assumes,
+   without touching the default layer or the user's code.
+   - The skeleton's placeholder logo (.smaller) retires: the user's own
+     #logo takes its place above the search bar.
+   - The engine switcher is created with float:left inside the search bar's
+     flex row, where floats are ignored and it would pile onto the right end
+     (colliding with the absolutely-positioned #scanqr/#fltBtn). Flex order
+     puts it back on the left.
+   - Bookmark tiles: the tile must be the positioned ancestor for the
+     absolutely-positioned .title overlay, and the overlay must be anchored
+     to the tile's origin — the user CSS gives it height:100% but no offsets,
+     so it otherwise takes its static position below the host line. The host
+     line itself is centered in the user CSS with top:50%/translate:-50%,
+     which presumes a definite-height link box; the skeleton's link box is
+     content-height, the percentage resolves to nothing, and the line is
+     shifted up out of the 35px card and clipped. The card is exactly one
+     line tall, so anchor the line to the card's top at full card height.
+   - The bookmark drawer's expand hint (::before) is translated -50% from a
+     centered anchor, like the logo; without left:50% it hangs off the
+     drawer's left edge. */
+body.l-custom .smaller {
+    display: none !important;
+}
+body.l-custom #switch_btn {
+    order: -1;
+}
+body.l-custom .box {
+    position: relative;
+}
+body.l-custom .box .url {
+    height: 35px;
+    line-height: 35px;
+    top: 0;
+    translate: 0 0 0;
+}
+body.l-custom .box .title {
+    top: 0;
+    left: 0;
+    margin-top: 0;
+}
+body.l-custom #bookmark_part::before {
+    left: 50%;
+}
 @media (prefers-color-scheme: dark) {
     body {
         background: linear-gradient(180deg, #17191d 0%, #101215 100%);
@@ -201,7 +259,7 @@ body {
     </div>
     <div id="button_group"></div>
     <div id="bookmark_part"><div id="box_container"><!--L:BOXES--></div></div>
-</div>
 <!--L:PART2-->
+</div>
 </body>
 </html>

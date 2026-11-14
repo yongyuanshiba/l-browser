@@ -43,15 +43,28 @@ object Homepage {
     private const val BOOKMARK_READ_TIMEOUT_MS = 2000L
 
     /** Assembles the full homepage HTML for one load. */
-    fun createHomepagePage(context: Context): String =
-        context.resources
-            .openRawResource(R.raw.homepage)
-            .bufferedReader()
-            .use { it.readText() }
-            .replace("<!--L:SHIM-->", buildShim(context))
-            .replace("<!--L:BOXES-->", buildBoxes(context))
-            .replace("/*L:PART1CSS*/", customPart(context, 1))
-            .replace("<!--L:PART2-->", customPart(context, 2))
+    fun createHomepagePage(context: Context): String {
+        val part1 = customPart(context, 1)
+        val part2 = customPart(context, 2)
+        val page =
+            context.resources
+                .openRawResource(R.raw.homepage)
+                .bufferedReader()
+                .use { it.readText() }
+                .replace("<!--L:SHIM-->", buildShim(context))
+                .replace("<!--L:BOXES-->", buildBoxes(context))
+                .replace("/*L:PART1CSS*/", part1)
+                .replace("<!--L:PART2-->", part2)
+        // While user code is present, flag the document so the skeleton's
+        // custom-mode parity rules apply (they are scoped to body.l-custom in
+        // homepage.html and restore the base-layout anchors the code was
+        // written against). With no code saved, the default layer is untouched.
+        return if (part1.isNotBlank() || part2.isNotBlank()) {
+            page.replace("<body>", "<body class=\"l-custom\">")
+        } else {
+            page
+        }
+    }
 
     /** Where one of the user's two homepage code parts lives in the app's files directory. */
     fun homepageCodeFile(context: Context, part: Int): File =
@@ -114,9 +127,12 @@ object Homepage {
                 ?.removePrefix("www.")
                 .orEmpty()
                 .ifBlank { url }
+        // Child order matters to user homepage CSS: `.title` is the tile's
+        // translucent colour layer and `.url` the host line painted above it,
+        // so the title layer is emitted first.
         return "<div class=\"box\"><a href=\"" + escapeAttribute(url) + "\" title=\"" +
-            escapeAttribute(title) + "\"><div class=\"url\">" + escapeText(host) +
-            "</div><div class=\"title\">" + escapeText(title) +
+            escapeAttribute(title) + "\"><div class=\"title\">" + escapeText(title) +
+            "</div><div class=\"url\">" + escapeText(host) +
             "</div><div class=\"overlay\"></div></a></div>"
     }
 
