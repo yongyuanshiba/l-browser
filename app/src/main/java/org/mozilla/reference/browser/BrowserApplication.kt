@@ -113,7 +113,7 @@ open class BrowserApplication : Application() {
 
         // The homepage lives in a built-in extension page (moz-extension origin); install it so
         // its URL is known by the time the cold-start landing and new tabs ask for it.
-        HomepageExtension.install(components.core.engine)
+        HomepageExtension.install(this, components.core.engine)
 
         components.push.feature?.let {
             Logger.info("AutoPushFeature is configured, initializing it...")

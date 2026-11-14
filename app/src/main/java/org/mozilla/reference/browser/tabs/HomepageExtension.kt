@@ -4,6 +4,7 @@
 
 package org.mozilla.reference.browser.tabs
 
+import android.content.Context
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +27,12 @@ import org.json.JSONObject
  * The step-1 route — serving the homepage through the request interceptor — was measured to land
  * as a `data:` document with an opaque origin: localStorage never persisted there, and the user
  * homepage code's engine switcher (which stores its choice in localStorage) cannot work on it. An
- * extension page has a real, profile-stable origin instead.
+ * extension page has a real, profile-stable origin instead. The extension itself is only a shell:
+ * its page asks (through the background script, over the native-messaging port) for the homepage
+ * document that [Homepage] assembles natively, then writes it into place with
+ * document.open/write/close, so the homepage's inline scripts run as parser-inserted scripts. The
+ * default CSP for extension pages is relaxed through the GeckoView config file (see
+ * EngineProvider); the extension manifest deliberately carries no CSP key of its own.
  *
  * The page's moz-extension:// address is discovered through the official metadata field:
  * [WebExtension.getMetadata] exposes `baseUrl` — "Root URL for this extension's pages", produced
@@ -46,11 +52,16 @@ object HomepageExtension {
     /** Where the extension ships inside the APK (see app/src/main/assets/extensions/). */
     private const val EXTENSION_LOCATION = "resource://android/assets/extensions/lprobe/"
 
-    /** Page inside the extension that carries the homepage (the probe page while verifying). */
-    private const val PAGE_PATH = "probe.html"
+    /** Page inside the extension that carries the homepage (a shell; see shell.js in the extension). */
+    private const val PAGE_PATH = "shell.html"
 
-    /** Upper bound for the cold-start landing to wait on URL discovery. */
-    private const val URL_WAIT_MS = 300_000L
+    /**
+     * Upper bound for the cold-start landing to wait on URL discovery. Discovery completes as soon
+     * as the extension policy exists, so the bound only bites on genuinely slow starts; it is sized
+     * for slow real devices, not for the software-emulated test rig (which needed more, and whose
+     * probe build used a larger instrumentation window).
+     */
+    private const val URL_WAIT_MS = 120_000L
 
     /** Discovery retry cadence; the loop stops as soon as a valid base URL is published. */
     private const val DISCOVERY_INTERVAL_MS = 500L
@@ -65,7 +76,21 @@ object HomepageExtension {
                 },
         )
 
+    /** Homepage assembly reads bookmarks and files; keep it off the message thread. */
+    private val assemblyScope =
+        CoroutineScope(
+            SupervisorJob() +
+                Dispatchers.Default +
+                CoroutineExceptionHandler { _, throwable ->
+                    Logger.error("HomepageExtension: assembly error: ${throwable.message}")
+                },
+        )
+
     private val pageUrlDeferred = CompletableDeferred<String?>()
+
+    /** Application context for homepage assembly; set by [install]. */
+    @Volatile
+    private var appContext: Context? = null
 
     /** The homepage page URL once discovered; null before that or if discovery failed. */
     @Volatile
@@ -73,7 +98,8 @@ object HomepageExtension {
         private set
 
     /** Installs the built-in extension. Called once, from BrowserApplication.onCreate. */
-    fun install(engine: Engine) {
+    fun install(context: Context, engine: Engine) {
+        appContext = context.applicationContext
         engine.installBuiltInWebExtension(
             id = EXTENSION_ID,
             url = EXTENSION_LOCATION,
@@ -84,10 +110,10 @@ object HomepageExtension {
                 )
                 publishBaseUrl(extension.getMetadata(), "install")
                 discoverBaseUrl(engine)
-                // Gate build: the homepage's data channel. Native pushes the page data
-                // to the extension's background script over this port; that only reaches
-                // us because the manifest now carries the `geckoViewAddons` permission.
-                extension.registerBackgroundMessageHandler("browser", gateMessageHandler)
+                // The homepage's data channel. The extension's background script relays the
+                // shell page's request over this port; that only reaches us because the manifest
+                // carries the `geckoViewAddons` permission.
+                extension.registerBackgroundMessageHandler("browser", homepageMessageHandler)
             },
             onError = { throwable ->
                 Logger.error("HomepageExtension: install failed: ${throwable.message}")
@@ -168,28 +194,50 @@ object HomepageExtension {
     suspend fun awaitPageUrl(): String? = withTimeoutOrNull(URL_WAIT_MS) { pageUrlDeferred.await() }
 
     /**
-     * Gate-build handler for the native data channel: as soon as the extension's background
-     * script connects its port, push a token message down it. The background mirrors the token
-     * into `browser.storage.local`, where the probe page reads and displays it — proving the
-     * native → background → storage → page chain that the formal homepage's data will use.
+     * The homepage's data channel: the shell page asks for the assembled homepage (one request
+     * type, relayed by the background script), and the freshly assembled document is posted back
+     * on the same port. Assembly happens per request, so bookmark tiles and the user's code parts
+     * are always current. Nothing else is answered on this channel.
      */
-    private val gateMessageHandler =
+    private val homepageMessageHandler =
         object : MessageHandler {
             override fun onPortConnected(port: Port) {
-                Logger.info("HomepageExtension: gate port connected (name=${port.name()})")
-                port.postMessage(
-                    JSONObject()
-                        .put("type", "l-gate")
-                        .put("token", "gate-token-2a"),
-                )
+                Logger.info("HomepageExtension: homepage port connected (name=${port.name()})")
             }
 
             override fun onPortMessage(message: Any, port: Port) {
-                Logger.info("HomepageExtension: gate port message: $message")
+                val request = message as? JSONObject ?: return
+                if (request.optString("type") != "l-homepage-request") {
+                    return
+                }
+                val id = request.optInt("id", 0)
+                val context = appContext
+                if (context == null) {
+                    Logger.error("HomepageExtension: homepage requested before install() set a context")
+                    return
+                }
+                assemblyScope.launch {
+                    val html =
+                        runCatching { Homepage.createHomepagePage(context) }
+                            .onFailure { throwable ->
+                                Logger.error(
+                                    "HomepageExtension: homepage assembly failed: ${throwable.message}",
+                                )
+                            }
+                            .getOrNull()
+                    val reply =
+                        JSONObject()
+                            .put("type", "l-homepage-html")
+                            .put("id", id)
+                    if (html != null) {
+                        reply.put("html", html)
+                    }
+                    runCatching { port.postMessage(reply) }
+                }
             }
 
             override fun onPortDisconnected(port: Port) {
-                Logger.info("HomepageExtension: gate port disconnected")
+                Logger.info("HomepageExtension: homepage port disconnected")
             }
         }
 }

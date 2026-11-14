@@ -1,17 +1,54 @@
-// L homepage extension background script (gate build).
+// L homepage extension background script.
 //
-// The formal homepage's data (search template, bookmark tiles, the user's own code
-// parts) lives on the native side. It reaches extension pages through this script:
-// the native side pushes it over a native-messaging port (which requires the
-// `geckoViewAddons` permission in the manifest), and this script mirrors it into
-// `browser.storage.local`, where every page of this extension can read it.
-//
-// Gate build: the native side pushes a small token message on port connect; mirror
-// it into storage so the probe page can prove the whole chain end to end.
-var lPort = browser.runtime.connectNative("browser");
-lPort.onMessage.addListener(function (msg) {
-    if (msg && msg.type === "l-gate") {
-        browser.storage.local.set({ l_gate_token: msg.token });
-        lPort.postMessage({ type: "l-gate-ack", token: msg.token });
+// The assembled homepage HTML lives on the native side (the skeleton, the
+// bookmark tiles, the search template and the user's own code parts are all
+// read there). The shell page asks for it with a runtime message; this script
+// relays the request over the native-messaging port — a channel that only
+// exists because the manifest carries the `geckoViewAddons` permission — and
+// hands the reply back. The native handler answers this one request type and
+// nothing else, so homepage code that reaches this channel can only ever
+// fetch its own homepage.
+var lPort = null;
+var lNextId = 1;
+var lPending = {};
+
+function lEnsurePort() {
+    if (lPort) {
+        return lPort;
     }
+    lPort = browser.runtime.connectNative('browser');
+    lPort.onMessage.addListener(function (msg) {
+        if (msg && msg.type === 'l-homepage-html') {
+            var resolve = lPending[msg.id];
+            delete lPending[msg.id];
+            if (resolve) {
+                resolve(msg.html || null);
+            }
+        }
+    });
+    lPort.onDisconnect.addListener(function () {
+        lPort = null;
+        var pending = lPending;
+        lPending = {};
+        for (var id in pending) {
+            pending[id](null);
+        }
+    });
+    return lPort;
+}
+
+browser.runtime.onMessage.addListener(function (msg) {
+    if (!msg || msg.type !== 'l-homepage-request') {
+        return undefined;
+    }
+    return new Promise(function (resolve) {
+        var id = lNextId++;
+        lPending[id] = resolve;
+        try {
+            lEnsurePort().postMessage({ type: 'l-homepage-request', id: id });
+        } catch (e) {
+            delete lPending[id];
+            resolve(null);
+        }
+    });
 });
