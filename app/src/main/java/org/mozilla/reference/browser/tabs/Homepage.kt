@@ -91,8 +91,11 @@ object Homepage {
 
     /**
      * Renders the bookmark tiles for `#box_container` from the mobile root's children. The DOM shape
-     * is a contract: user homepage code selects `.box > [title]` and filters tiles on the link's
-     * `title` attribute, reads the display text from `.title` and the host text from `.url`.
+     * is a contract mirroring the Via homepage's own tile markup: the link carries the bookmark
+     * title in its `title` attribute (user homepage code selects `.box > [title]` and filters tiles
+     * on it), `.title` is the tile's colour layer (initial character plus an inline background
+     * colour), and `.url` carries the bookmark's display title — despite the class name, that is
+     * the text line the tile design shows.
      *
      * Assembly runs on a background thread off the message handler, so reading synchronously is safe; the read is
      * still bounded so a stuck store can never hang a homepage load — it just renders the empty hint.
@@ -117,7 +120,12 @@ object Homepage {
         return items.joinToString(separator = "") { node -> boxHtml(node) }
     }
 
-    /** One bookmark tile: the link carries the bookmark title; `.url` shows the bare host (no favicon pipeline in v1). */
+    /**
+     * One bookmark tile. The colour in `.title` is derived deterministically from the host: the
+     * environment this markup mirrors takes the colour from the site's icon, and L has no favicon
+     * pipeline yet — a stable host-derived pastel keeps the colourful-tile design (and tints the
+     * default layer's initial badge) until one exists.
+     */
     private fun boxHtml(node: BookmarkNode): String {
         val url = node.url.orEmpty()
         val title = node.title?.takeIf { it.isNotBlank() } ?: url
@@ -126,13 +134,16 @@ object Homepage {
                 .getOrNull()
                 ?.removePrefix("www.")
                 .orEmpty()
-                .ifBlank { url }
+        val initial =
+            if (title.isEmpty()) "" else String(Character.toChars(title.codePointAt(0)))
+        val hue = ((host.ifBlank { title }).lowercase().hashCode() and 0x7fffffff) % 360
         // Child order matters to user homepage CSS: `.title` is the tile's
-        // translucent colour layer and `.url` the host line painted above it,
+        // translucent colour layer and `.url` the text line painted above it,
         // so the title layer is emitted first.
         return "<div class=\"box\"><a href=\"" + escapeAttribute(url) + "\" title=\"" +
-            escapeAttribute(title) + "\"><div class=\"title\">" + escapeText(title) +
-            "</div><div class=\"url\">" + escapeText(host) +
+            escapeAttribute(title) + "\"><div class=\"title\" style=\"background-color: hsl(" +
+            hue + ", 68%, 72%)\">" + escapeText(initial) +
+            "</div><div class=\"url\">" + escapeText(title) +
             "</div><div class=\"overlay\"></div></a></div>"
     }
 

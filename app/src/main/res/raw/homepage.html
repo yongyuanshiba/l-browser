@@ -161,9 +161,15 @@ body {
     white-space: nowrap;
 }
 .box .title {
-    margin-top: 4px;
-    font-size: 12px;
-    word-break: break-all;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto;
+    border-radius: 50%;
+    line-height: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: rgba(30, 35, 42, .72);
+    overflow: hidden;
 }
 .box .overlay {
     display: none;
@@ -197,7 +203,24 @@ body {
      line tall, so anchor the line to the card's top at full card height.
    - The bookmark drawer's expand hint (::before) is translated -50% from a
      centered anchor, like the logo; without left:50% it hangs off the
-     drawer's left edge. */
+     drawer's left edge. Its glyph also needs text-align:center — the base
+     stylesheet it was written against centers it, this skeleton leaves it
+     at the pill's left edge.
+   - The drawer itself: user CSS translates it 46px down from its static
+     position just under the search bar, but never sets `top` — the
+     skeleton's default-layer top:58px survives into custom mode and stacks
+     with the translate, opening a ~60px gap under the search bar that the
+     original environment does not have. top:6px restores the assumed
+     static position (the residual is the bar's own margin rhythm).
+   - Tile text: the tile's colour layer (.title) must be what shows through
+     the card. The skeleton paints the text line (.url) as a white pill with
+     its own background/border/shadow, which would cover the colour layer
+     edge to edge; in custom mode the line is text-only, like the original.
+   - The colour layer's geometry: the default layer now styles .title as a
+     small round badge (see the base rules), whose width/height/border-radius
+     would otherwise win over the user CSS card rules on specificity and
+     shrink the layer to a disc inside the card. The custom-mode rule below
+     resets it to fill the tile. */
 body.l-custom .smaller {
     display: none !important;
 }
@@ -212,14 +235,26 @@ body.l-custom .box .url {
     line-height: 35px;
     top: 0;
     translate: 0 0 0;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
 }
 body.l-custom .box .title {
     top: 0;
     left: 0;
-    margin-top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
+    line-height: normal;
+    text-align: left;
+}
+body.l-custom #bookmark_part {
+    top: 6px;
 }
 body.l-custom #bookmark_part::before {
     left: 50%;
+    text-align: center;
 }
 @media (prefers-color-scheme: dark) {
     body {
