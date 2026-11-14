@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import kotlinx.coroutines.Job
@@ -45,6 +46,7 @@ import org.mozilla.reference.browser.addons.AddonsActivity
 import org.mozilla.reference.browser.ext.components
 import org.mozilla.reference.browser.ext.share
 import org.mozilla.reference.browser.settings.SettingsActivity
+import org.mozilla.reference.browser.tabs.Homepage
 import org.mozilla.reference.browser.tabs.HomepageExtension
 
 /**
@@ -143,6 +145,21 @@ class ToolbarIntegration(
             },
             TextMenuCandidate(text = "Find in Page") {
                 FindInPageIntegration.launch?.invoke()
+            },
+            TextMenuCandidate(text = "加入书签") {
+                val url = sessionState.content.url
+                val title = sessionState.content.title.ifBlank { url }
+                scope.launch {
+                    val added =
+                        context.components.core.bookmarksStorage
+                            .addItem(Homepage.MOBILE_ROOT_GUID, url, title, null)
+                            .isSuccess
+                    Toast.makeText(
+                        context,
+                        if (added) "已加入书签" else "加入书签失败",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
             },
         )
 

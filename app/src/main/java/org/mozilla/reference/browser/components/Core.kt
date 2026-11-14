@@ -16,6 +16,7 @@ import mozilla.components.browser.session.storage.SessionStorage
 import mozilla.components.browser.state.engine.EngineMiddleware
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.browser.storage.sync.PlacesBookmarksStorage
 import mozilla.components.browser.storage.sync.PlacesHistoryStorage
 import mozilla.components.browser.storage.sync.RemoteTabsStorage
 import mozilla.components.browser.thumbnails.ThumbnailsMiddleware
@@ -152,6 +153,13 @@ class Core(
 
     /** A convenience accessor to the [PlacesHistoryStorage]. */
     val historyStorage by lazy { lazyHistoryStorage.value }
+
+    /**
+     * The bookmarks store, backed by the same Places database as [historyStorage] — the
+     * browser-storage-sync artifact the app already depends on, so no new dependency. Used by the
+     * homepage and the bookmarks page.
+     */
+    val bookmarksStorage by lazy { PlacesBookmarksStorage(context) }
 
     /** The storage component to persist logins data (username/password) for websites. */
     val lazyLoginsStorage = lazy { SyncableLoginsStorage(context, lazySecurePrefs) }

@@ -5,7 +5,12 @@
 package org.mozilla.reference.browser.tabs
 
 import android.content.Context
+import android.net.Uri
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
+import mozilla.components.concept.storage.BookmarkNode
+import mozilla.components.concept.storage.BookmarkNodeType
 import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.reference.browser.R
 import org.mozilla.reference.browser.ext.components
@@ -33,6 +38,9 @@ object Homepage {
     /** Used only while the store has no default search engine yet (first run before search init). */
     private const val FALLBACK_SEARCH_TEMPLATE = "https://cn.bing.com/search?q=%s"
 
+    /** Upper bound for the synchronous bookmark read during page assembly. */
+    private const val BOOKMARK_READ_TIMEOUT_MS = 2000L
+
     /** Assembles the full homepage HTML for one load. */
     fun createHomepagePage(context: Context): String =
         context.resources
@@ -40,9 +48,66 @@ object Homepage {
             .bufferedReader()
             .use { it.readText() }
             .replace("<!--L:SHIM-->", buildShim(context))
-            .replace("<!--L:BOXES-->", "")
+            .replace("<!--L:BOXES-->", buildBoxes(context))
             .replace("/*L:PART1CSS*/", "")
             .replace("<!--L:PART2-->", "")
+
+    /**
+     * The Places root GUID of the mobile bookmarks folder — where the app's "加入书签" action files
+     * new bookmarks, and what the homepage renders. Places defines these root GUIDs itself; the
+     * concept-storage module no longer ships a constants type for them.
+     */
+    const val MOBILE_ROOT_GUID = "mobile______"
+
+    /**
+     * Renders the bookmark tiles for `#box_container` from the mobile root's children. The DOM shape
+     * is a contract: user homepage code selects `.box > [title]` and filters tiles on the link's
+     * `title` attribute, reads the display text from `.title` and the host text from `.url`.
+     *
+     * The interceptor calls this on an engine thread, so reading synchronously is safe; the read is
+     * still bounded so a stuck store can never hang a homepage load — it just renders the empty hint.
+     */
+    private fun buildBoxes(context: Context): String {
+        val storage = context.components.core.bookmarksStorage
+        val tree =
+            runCatching {
+                runBlocking {
+                    withTimeoutOrNull(BOOKMARK_READ_TIMEOUT_MS) {
+                        storage.getTree(MOBILE_ROOT_GUID, recursive = false)
+                    }?.getOrNull()
+                }
+            }.getOrNull()
+        val items =
+            tree?.children.orEmpty().filter {
+                it.type == BookmarkNodeType.ITEM && !it.url.isNullOrBlank()
+            }
+        if (items.isEmpty()) {
+            return "<div class=\"l-empty-hint\">暂无书签</div>"
+        }
+        return items.joinToString(separator = "") { node -> boxHtml(node) }
+    }
+
+    /** One bookmark tile: the link carries the bookmark title; `.url` shows the bare host (no favicon pipeline in v1). */
+    private fun boxHtml(node: BookmarkNode): String {
+        val url = node.url.orEmpty()
+        val title = node.title?.takeIf { it.isNotBlank() } ?: url
+        val host =
+            runCatching { Uri.parse(url).host }
+                .getOrNull()
+                ?.removePrefix("www.")
+                .orEmpty()
+                .ifBlank { url }
+        return "<div class=\"box\"><a href=\"" + escapeAttribute(url) + "\" title=\"" +
+            escapeAttribute(title) + "\"><div class=\"url\">" + escapeText(host) +
+            "</div><div class=\"title\">" + escapeText(title) +
+            "</div><div class=\"overlay\"></div></a></div>"
+    }
+
+    private fun escapeText(value: String): String =
+        value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    private fun escapeAttribute(value: String): String =
+        escapeText(value).replace("\"", "&quot;")
 
     /**
      * The head shim. It must run before any user script: `window.search` is read (and later replaced)
