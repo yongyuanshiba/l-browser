@@ -111,7 +111,7 @@ object BuiltinExtensions {
                     existing != null -> {
                         Logger.info(
                             "BuiltinExtensions: ${extension.label} already installed " +
-                                "(version=${existing.getMetadata().version}); skipping auto-install",
+                                "(version=${existing.getMetadata()?.version}); skipping auto-install",
                         )
                         if (!prefs.getBoolean(markerKey, false)) {
                             prefs.edit().putBoolean(markerKey, true).apply()
@@ -171,7 +171,7 @@ object BuiltinExtensions {
                 onSuccess = { installed ->
                     Logger.info(
                         "BuiltinExtensions: ${extension.label} ready " +
-                            "(id=${installed.id}, version=${installed.getMetadata().version})",
+                            "(id=${installed.id}, version=${installed.getMetadata()?.version})",
                     )
                     context
                         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
