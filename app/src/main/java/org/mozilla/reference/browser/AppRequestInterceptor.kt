@@ -13,6 +13,7 @@ import mozilla.components.browser.errorpages.ErrorPages
 import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.request.ErrorType
 import mozilla.components.concept.engine.request.RequestInterceptor
+import org.mozilla.reference.browser.bookmarks.BookmarksActivity
 import org.mozilla.reference.browser.ext.components
 import org.mozilla.reference.browser.tabs.PrivatePage
 
@@ -28,6 +29,15 @@ class AppRequestInterceptor(private val context: Context) : RequestInterceptor {
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? =
         when (uri) {
+            // Via's hook URLs: the bookmarks page and (step 5) the QR scanner are native screens,
+            // so the load itself is denied and the screen is opened instead.
+            "via://bookmarks", "v://bookmarks" -> {
+                val intent = Intent(context, BookmarksActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                RequestInterceptor.InterceptionResponse.Deny
+            }
+
             "about:privatebrowsing" -> {
                 val page = PrivatePage.createPrivateBrowsingPage(context, uri)
                 RequestInterceptor.InterceptionResponse.Content(page, encoding = "base64")

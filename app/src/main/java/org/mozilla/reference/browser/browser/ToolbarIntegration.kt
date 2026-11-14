@@ -43,6 +43,7 @@ import mozilla.components.support.base.feature.UserInteractionHandler
 import mozilla.components.support.ktx.android.view.ImeInsetsSynchronizer
 import org.mozilla.reference.browser.R
 import org.mozilla.reference.browser.addons.AddonsActivity
+import org.mozilla.reference.browser.bookmarks.BookmarksActivity
 import org.mozilla.reference.browser.ext.components
 import org.mozilla.reference.browser.ext.share
 import org.mozilla.reference.browser.settings.SettingsActivity
@@ -183,6 +184,11 @@ class ToolbarIntegration(
                     } else {
                         tabsUseCases.addTab.invoke(homepageUrl, selectTab = true)
                     }
+                },
+                TextMenuCandidate(text = "书签") {
+                    val intent = Intent(context, BookmarksActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(intent)
                 },
                 TextMenuCandidate(text = "Add-ons") {
                     val intent = Intent(context, AddonsActivity::class.java)

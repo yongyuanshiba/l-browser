@@ -166,6 +166,11 @@
             android:name=".CrashListActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".bookmarks.BookmarksActivity"
+            android:exported="false"
+            android:label="书签" />
+
         <activity android:name=".autofill.AutofillUnlockActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
