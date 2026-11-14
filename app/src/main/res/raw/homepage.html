@@ -15,7 +15,7 @@ html, body {
 }
 body {
     font-family: sans-serif;
-    background: #f7f8fa;
+    background: linear-gradient(180deg, #fdfdfe 0%, #f2f4f7 100%);
     color: #222;
 }
 #content {
@@ -32,7 +32,8 @@ body {
     translate: -50% -64px 0;
     font-size: 34px;
     font-weight: 600;
-    color: #444;
+    letter-spacing: 1px;
+    color: #3c4652;
 }
 .search_part {
     margin: 0;
@@ -43,14 +44,14 @@ body {
     left: 50%;
     top: 0;
     translate: -50% 0 0;
-    width: 80%;
+    width: 82%;
     height: 46px;
     box-sizing: border-box;
-    padding: 0 10px;
-    background: #fff;
-    border: 1px solid #dde1e6;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
+    padding: 0 12px;
+    background: rgba(255, 255, 255, .92);
+    border: 1px solid rgba(60, 70, 82, .08);
+    border-radius: 23px;
+    box-shadow: 0 4px 14px rgba(60, 70, 82, .08);
 }
 .search_bar > span {
     display: flex;
@@ -140,8 +141,11 @@ body {
     height: 44px;
     line-height: 44px;
     border-radius: 12px;
-    background: #eceff3;
+    background: rgba(255, 255, 255, .92);
+    border: 1px solid rgba(60, 70, 82, .07);
+    box-shadow: 0 2px 6px rgba(60, 70, 82, .06);
     font-size: 12px;
+    color: #3c4652;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -158,6 +162,29 @@ body {
     color: #98a0aa;
     font-size: 13px;
     margin-top: 14px;
+}
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(180deg, #17191d 0%, #101215 100%);
+        color: rgba(255, 255, 255, .85);
+    }
+    .smaller {
+        color: rgba(255, 255, 255, .85);
+    }
+    .search_bar {
+        background: rgba(255, 255, 255, .08);
+        border-color: rgba(255, 255, 255, .12);
+        box-shadow: none;
+    }
+    #search_submit {
+        color: rgba(255, 255, 255, .85);
+    }
+    .box .url {
+        background: rgba(255, 255, 255, .08);
+        border-color: rgba(255, 255, 255, .1);
+        box-shadow: none;
+        color: rgba(255, 255, 255, .8);
+    }
 }
 </style>
 <style>/*L:PART1CSS*/</style>

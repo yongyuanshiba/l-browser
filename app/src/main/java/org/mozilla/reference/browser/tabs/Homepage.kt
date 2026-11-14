@@ -90,22 +90,6 @@ object Homepage {
                 console.log('L-HOME-ERROR: ' + event.message);
             });
             </script>
-            <script>
-            // Stage 4 probe (temporary; removed once the serving route is proven): reports how the
-            // interceptor-served page is delivered — its URL/origin and whether localStorage works
-            // and persists — through the Gecko console, where the smoke test reads it from logcat.
-            window.addEventListener('load', function () {
-                var line = 'LPROBE href=' + location.href + ' origin=' + location.origin;
-                try {
-                    var prev = window.localStorage.getItem('__l_probe__');
-                    window.localStorage.setItem('__l_probe__', 'probe-ok');
-                    line += ' ls_prev=' + prev + ' ls_read=' + window.localStorage.getItem('__l_probe__');
-                } catch (e) {
-                    line += ' ls_error=' + e.name;
-                }
-                console.log(line);
-            });
-            </script>
             """.trimIndent()
     }
 

@@ -45,6 +45,7 @@ import org.mozilla.reference.browser.addons.AddonsActivity
 import org.mozilla.reference.browser.ext.components
 import org.mozilla.reference.browser.ext.share
 import org.mozilla.reference.browser.settings.SettingsActivity
+import org.mozilla.reference.browser.tabs.HomepageExtension
 
 /**
  * Wires the browser toolbar to the selected tab, or to the tab given by [sessionId]: URL loading and search,
@@ -155,6 +156,17 @@ class ToolbarIntegration(
 
         return sessionMenuItems +
             listOf(
+                TextMenuCandidate(text = "主页") {
+                    // The homepage is an extension page; its URL only exists once the
+                    // built-in extension is installed. Before that (or if the install
+                    // failed) a blank tab is the safe landing.
+                    val homepageUrl = HomepageExtension.pageUrl ?: "about:blank"
+                    if (store.state.selectedTab != null) {
+                        sessionUseCases.loadUrl.invoke(homepageUrl)
+                    } else {
+                        tabsUseCases.addTab.invoke(homepageUrl, selectTab = true)
+                    }
+                },
                 TextMenuCandidate(text = "Add-ons") {
                     val intent = Intent(context, AddonsActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
