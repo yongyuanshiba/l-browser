@@ -233,13 +233,4 @@
     <string name="cd_reader_view_disable">Disable Reader View</string>
     <string name="cd_tabs">Tabs</string>
     <string name="cd_private_tabs">Private tabs</string>
-    <!-- Homepage header bar and wallpaper (stage 5 platform layer) -->
-    <string name="preferences_homepage_header">Homepage header</string>
-    <string name="preferences_homepage_header_summary">Show the page title and a scan button above the homepage</string>
-    <string name="homepage_header_default_title">我与世纪共百年</string>
-    <string name="homepage_header_scan_cd">Scan</string>
-    <string name="preferences_homepage_wallpaper">Homepage wallpaper</string>
-    <string name="preferences_homepage_wallpaper_summary_unset">Not set</string>
-    <string name="preferences_homepage_wallpaper_summary_set">Set</string>
-    <string name="menu_share">Share</string>
 </resources>

@@ -186,11 +186,6 @@
             android:exported="false"
             android:label="主页代码" />
 
-        <activity
-            android:name=".settings.HomepageWallpaperActivity"
-            android:exported="false"
-            android:label="主页壁纸" />
-
         <activity android:name=".autofill.AutofillUnlockActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
