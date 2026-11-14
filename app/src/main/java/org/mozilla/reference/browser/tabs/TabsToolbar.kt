@@ -6,6 +6,7 @@ package org.mozilla.reference.browser.tabs
 
 import android.content.Context
 import android.util.AttributeSet
+import mozilla.components.browser.state.selector.normalTabs
 import mozilla.components.feature.tabs.tabstray.TabsFeature
 import mozilla.components.ui.icons.R as iconsR
 import org.mozilla.reference.browser.R
@@ -38,11 +39,19 @@ constructor(
                         // The homepage is an extension page; its URL only exists once the
                         // built-in extension is installed. Before that (or if the install
                         // failed) a blank tab is the safe landing.
-                        false ->
-                            tabsUseCases.addTab.invoke(
-                                HomepageExtension.pageUrl ?: "about:blank",
-                                selectTab = true,
-                            )
+                        false -> {
+                            val homepageUrl = HomepageExtension.pageUrl ?: "about:blank"
+                            val existing =
+                                context.components.core.store.state.normalTabs
+                                    .firstOrNull { it.content.url == homepageUrl }
+                            // A homepage tab that is already open gets selected instead
+                            // of stacking up identical tabs that each pay a full load.
+                            if (existing != null) {
+                                tabsUseCases.selectTab.invoke(existing.id)
+                            } else {
+                                tabsUseCases.addTab.invoke(homepageUrl, selectTab = true)
+                            }
+                        }
                     }
                     closeTabsTray?.invoke()
                 }

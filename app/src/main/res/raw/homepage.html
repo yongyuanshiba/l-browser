@@ -120,10 +120,34 @@ body {
     translate: -50% 0 0;
     height: 0;
 }
+/* Default-layer quick entries for the two via:// hooks. In the environment
+   this page design comes from, the hooks live in the user's own code; the
+   default layer (custom code off) has no such code, so the skeleton provides
+   its own row — hidden again in custom mode, where the user's entries rule. */
+.l-actions {
+    position: absolute;
+    left: 50%;
+    top: 54px;
+    translate: -50% 0 0;
+    display: flex;
+    gap: 10px;
+}
+.l-action {
+    padding: 6px 18px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .92);
+    border: 1px solid rgba(60, 70, 82, .08);
+    box-shadow: 0 2px 6px rgba(60, 70, 82, .06);
+    font-size: 13px;
+    line-height: 18px;
+    color: #3c4652;
+    text-decoration: none;
+    white-space: nowrap;
+}
 #bookmark_part {
     position: absolute;
     left: 50%;
-    top: 58px;
+    top: 98px;
     translate: -50% 0 0;
     width: 88%;
 }
@@ -159,6 +183,7 @@ body {
     color: #3c4652;
     overflow: hidden;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
 .box .title {
     width: 30px;
@@ -208,7 +233,7 @@ body {
      at the pill's left edge.
    - The drawer itself: user CSS translates it 46px down from its static
      position just under the search bar, but never sets `top` — the
-     skeleton's default-layer top:58px survives into custom mode and stacks
+     skeleton's default-layer top:98px survives into custom mode and stacks
      with the translate, opening a ~60px gap under the search bar that the
      original environment does not have. top:6px restores the assumed
      static position (the residual is the bar's own margin rhythm).
@@ -223,6 +248,9 @@ body {
      resets it to fill the tile. */
 body.l-custom .smaller {
     display: none !important;
+}
+body.l-custom .l-actions {
+    display: none;
 }
 body.l-custom #switch_btn {
     order: -1;
@@ -278,6 +306,12 @@ body.l-custom #bookmark_part::before {
         box-shadow: none;
         color: rgba(255, 255, 255, .8);
     }
+    .l-action {
+        background: rgba(255, 255, 255, .08);
+        border-color: rgba(255, 255, 255, .1);
+        box-shadow: none;
+        color: rgba(255, 255, 255, .85);
+    }
 }
 </style>
 <style>/*L:PART1CSS*/</style>
@@ -293,6 +327,7 @@ body.l-custom #bookmark_part::before {
         <div class="opSug_wpr"><table><tbody id="sug_tbody"></tbody></table></div>
     </div>
     <div id="button_group"></div>
+    <div class="l-actions"><a class="l-action" href="via://scanner">扫码</a><a class="l-action" href="via://bookmarks">书签</a></div>
     <div id="bookmark_part"><div id="box_container"><!--L:BOXES--></div></div>
 <!--L:PART2-->
 </div>

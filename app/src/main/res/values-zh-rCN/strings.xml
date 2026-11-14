@@ -195,4 +195,13 @@
     <string name="cd_reader_view_disable">停用阅读视图</string>
     <string name="cd_tabs">标签页</string>
     <string name="cd_private_tabs">隐私标签页</string>
+    <!-- 主页页眉与壁纸（阶段 5 平台层） -->
+    <string name="preferences_homepage_header">主页页眉</string>
+    <string name="preferences_homepage_header_summary">在主页上方显示页面标题与扫码按钮</string>
+    <string name="homepage_header_default_title">我与世纪共百年</string>
+    <string name="homepage_header_scan_cd">扫码</string>
+    <string name="preferences_homepage_wallpaper">主页壁纸</string>
+    <string name="preferences_homepage_wallpaper_summary_unset">未设置</string>
+    <string name="preferences_homepage_wallpaper_summary_set">已设置</string>
+    <string name="menu_share">分享</string>
 </resources>

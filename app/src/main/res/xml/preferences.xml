@@ -63,6 +63,12 @@
         android:title="主页">
 
         <androidx.preference.SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="@string/pref_key_homepage_header"
+            android:summary="@string/preferences_homepage_header_summary"
+            android:title="@string/preferences_homepage_header" />
+
+        <androidx.preference.SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="@string/pref_key_homepage_custom"
             android:summary="开启后，主页会加载下面粘贴的两段自定义代码"
@@ -71,6 +77,11 @@
         <androidx.preference.Preference
             android:key="@string/pref_key_homepage_code"
             android:title="主页代码" />
+
+        <androidx.preference.Preference
+            android:key="@string/pref_key_homepage_wallpaper"
+            android:title="@string/preferences_homepage_wallpaper"
+            android:summary="@string/preferences_homepage_wallpaper_summary_unset" />
 
         <androidx.preference.Preference
             android:key="pref_key_open_bookmarks"

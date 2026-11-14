@@ -6,6 +6,7 @@ package org.mozilla.reference.browser.tabs
 
 import android.content.Context
 import android.net.Uri
+import android.util.Base64
 import java.io.File
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -42,28 +43,120 @@ object Homepage {
     /** Upper bound for the synchronous bookmark read during page assembly. */
     private const val BOOKMARK_READ_TIMEOUT_MS = 2000L
 
+    /** The last assembled page and the fingerprint of the inputs it was built from. */
+    @Volatile
+    private var cachedPage: String? = null
+
+    @Volatile
+    private var cachedFingerprint: Long = 0L
+
     /** Assembles the full homepage HTML for one load. */
     fun createHomepagePage(context: Context): String {
         val part1 = customPart(context, 1)
         val part2 = customPart(context, 2)
-        val page =
+        val boxes = buildBoxes(context)
+        val template = searchTemplate(context)
+        val wallpaper = homepageWallpaperFile(context)
+        val wallpaperStamp =
+            if (wallpaper.isFile) {
+                wallpaper.length() to wallpaper.lastModified()
+            } else {
+                null
+            }
+        // Re-entering the homepage re-runs this assembly every time, yet its inputs
+        // only change when the user edits the code parts, a bookmark changes, the
+        // default search engine changes or the wallpaper changes. An unchanged input
+        // set therefore reuses the last assembled document instead of rebuilding it —
+        // worth it alone for skipping the wallpaper's base64 encoding.
+        val fingerprint = fingerprintOf(part1, part2, boxes, template, wallpaperStamp)
+        cachedPage?.let { cached ->
+            if (fingerprint == cachedFingerprint) {
+                return cached
+            }
+        }
+        var page =
             context.resources
                 .openRawResource(R.raw.homepage)
                 .bufferedReader()
                 .use { it.readText() }
-                .replace("<!--L:SHIM-->", buildShim(context))
-                .replace("<!--L:BOXES-->", buildBoxes(context))
+                .replace("<!--L:SHIM-->", buildShim(template))
+                .replace("<!--L:BOXES-->", boxes)
+        page = injectWallpaper(page, wallpaper, wallpaperStamp != null)
+        page =
+            page
                 .replace("/*L:PART1CSS*/", part1)
                 .replace("<!--L:PART2-->", part2)
         // While user code is present, flag the document so the skeleton's
         // custom-mode parity rules apply (they are scoped to body.l-custom in
         // homepage.html and restore the base-layout anchors the code was
         // written against). With no code saved, the default layer is untouched.
-        return if (part1.isNotBlank() || part2.isNotBlank()) {
-            page.replace("<body>", "<body class=\"l-custom\">")
-        } else {
-            page
+        val result =
+            if (part1.isNotBlank() || part2.isNotBlank()) {
+                page.replace("<body>", "<body class=\"l-custom\">")
+            } else {
+                page
+            }
+        cachedPage = result
+        cachedFingerprint = fingerprint
+        return result
+    }
+
+    /** A cheap mix of every assembly input, so a changed input can never hit the cache. */
+    private fun fingerprintOf(
+        part1: String,
+        part2: String,
+        boxes: String,
+        template: String,
+        wallpaperStamp: Pair<Long, Long>?,
+    ): Long {
+        var hash = 1125899906842597L
+        fun mix(value: Long) {
+            hash = hash * 31L + value
         }
+        mix(part1.length.toLong())
+        mix(part1.hashCode().toLong())
+        mix(part2.length.toLong())
+        mix(part2.hashCode().toLong())
+        mix(boxes.length.toLong())
+        mix(boxes.hashCode().toLong())
+        mix(template.hashCode().toLong())
+        mix(wallpaperStamp?.first ?: -1L)
+        mix(wallpaperStamp?.second ?: -1L)
+        return hash
+    }
+
+    /** Where the user's homepage wallpaper lives in the app's files directory, once set. */
+    fun homepageWallpaperFile(context: Context): File =
+        File(File(context.filesDir, "homepage"), "wallpaper.jpg")
+
+    /**
+     * Puts the user's wallpaper behind the homepage: a style block carrying the image as
+     * a data URI (cover, centred, fixed) goes immediately before the user-CSS style
+     * element, so the user's own CSS can still override it. The shell page lives on a
+     * moz-extension origin that cannot load file:// subresources, which is why the image
+     * travels inside the document. With no wallpaper set the document is returned
+     * untouched — byte-identical to the no-wallpaper assembly.
+     */
+    private fun injectWallpaper(
+        page: String,
+        wallpaper: File,
+        present: Boolean,
+    ): String {
+        if (!present) {
+            return page
+        }
+        val base64 =
+            runCatching {
+                Base64.encodeToString(wallpaper.readBytes(), Base64.NO_WRAP)
+            }.getOrNull() ?: return page
+        val style =
+            "<style>body{background-image:url(\"data:image/jpeg;base64," + base64 +
+                "\");background-size:cover;background-position:center;" +
+                "background-repeat:no-repeat;background-attachment:fixed;}</style>"
+        return page.replace(
+            "<style>/*L:PART1CSS*/</style>",
+            style + "<style>/*L:PART1CSS*/</style>",
+        )
     }
 
     /** Where one of the user's two homepage code parts lives in the app's files directory. */
@@ -160,9 +253,9 @@ object Homepage {
      * and configurable. The form's submit is routed through `window.search` looked up at event time,
      * never through a cached reference, for the same reason.
      */
-    private fun buildShim(context: Context): String {
+    private fun buildShim(searchTemplate: String): String {
         val template =
-            searchTemplate(context)
+            searchTemplate
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
         return """

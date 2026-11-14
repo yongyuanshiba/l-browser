@@ -28,6 +28,7 @@ import org.mozilla.reference.browser.R
 import org.mozilla.reference.browser.R.string.pref_key_about_page
 import org.mozilla.reference.browser.R.string.pref_key_dns_mode
 import org.mozilla.reference.browser.R.string.pref_key_homepage_code
+import org.mozilla.reference.browser.R.string.pref_key_homepage_wallpaper
 import org.mozilla.reference.browser.R.string.pref_key_dns_status
 import org.mozilla.reference.browser.R.string.pref_key_make_default_browser
 import org.mozilla.reference.browser.R.string.pref_key_override_amo_collection
@@ -36,6 +37,7 @@ import org.mozilla.reference.browser.R.string.pref_key_remote_debugging
 import org.mozilla.reference.browser.autofill.AutofillPreference
 import org.mozilla.reference.browser.ext.getPreferenceKey
 import org.mozilla.reference.browser.ext.requireComponents
+import org.mozilla.reference.browser.tabs.Homepage
 
 private typealias RBSettings = org.mozilla.reference.browser.settings.Settings
 
@@ -73,6 +75,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val dnsModeKey = requireContext().getPreferenceKey(pref_key_dns_mode)
         val dnsStatusKey = requireContext().getPreferenceKey(pref_key_dns_status)
         val homepageCodeKey = requireContext().getPreferenceKey(pref_key_homepage_code)
+        val homepageWallpaperKey = requireContext().getPreferenceKey(pref_key_homepage_wallpaper)
 
         val preferenceMakeDefaultBrowser = findPreference<Preference>(makeDefaultBrowserKey)
         val preferenceRemoteDebugging = findPreference<SwitchPreferenceCompat>(remoteDebuggingKey)
@@ -83,6 +86,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val preferenceDnsMode = findPreference<ListPreference>(dnsModeKey)
         val preferenceDnsStatus = findPreference<Preference>(dnsStatusKey)
         val preferenceHomepageCode = findPreference<Preference>(homepageCodeKey)
+        val preferenceHomepageWallpaper = findPreference<Preference>(homepageWallpaperKey)
 
         if (!AutofillPreference.isSupported(requireContext())) {
             preferenceAutofill?.isVisible = false
@@ -95,6 +99,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         preferenceDnsMode?.onPreferenceChangeListener = getChangeListenerForDnsMode(preferenceDnsMode, preferenceDnsStatus)
         updateDnsPreferences(preferenceDnsMode, preferenceDnsStatus, DnsSettings.currentMode(requireContext()))
         preferenceHomepageCode?.onPreferenceClickListener = getClickListenerForHomepageCode()
+        preferenceHomepageWallpaper?.onPreferenceClickListener = getClickListenerForHomepageWallpaper()
+        updateWallpaperSummary(preferenceHomepageWallpaper)
         preferenceAboutPage?.onPreferenceClickListener = getAboutPageListener()
         preferencePrivacy?.onPreferenceClickListener = getClickListenerForPrivacy()
         preferenceCustomAddons?.onPreferenceClickListener = getClickListenerForCustomAddons()
@@ -103,6 +109,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun getClickListenerForHomepageCode(): OnPreferenceClickListener = OnPreferenceClickListener {
         startActivity(Intent(requireContext(), HomepageCodeActivity::class.java))
         true
+    }
+
+    private fun getClickListenerForHomepageWallpaper(): OnPreferenceClickListener = OnPreferenceClickListener {
+        startActivity(Intent(requireContext(), HomepageWallpaperActivity::class.java))
+        true
+    }
+
+    /** The wallpaper entry reports whether a wallpaper is currently stored. */
+    private fun updateWallpaperSummary(preference: Preference?) {
+        val file = Homepage.homepageWallpaperFile(requireContext())
+        preference?.summary =
+            getString(
+                if (file.isFile && file.length() > 0) {
+                    R.string.preferences_homepage_wallpaper_summary_set
+                } else {
+                    R.string.preferences_homepage_wallpaper_summary_unset
+                },
+            )
     }
 
     private fun getClickListenerForMakeDefaultBrowser(): OnPreferenceClickListener = OnPreferenceClickListener {

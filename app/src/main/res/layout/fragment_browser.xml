@@ -20,6 +20,38 @@
         android:layout_height="@dimen/browser_toolbar_height"
         android:visibility="gone" />
 
+    <LinearLayout
+        android:id="@+id/homepageHeader"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_gravity="top"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="4dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/homepageHeaderTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#222222"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/homepageHeaderScan"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/homepage_header_scan_cd"
+            android:src="@drawable/mozac_ic_qr_code_24" />
+    </LinearLayout>
+
     <mozilla.components.ui.widgets.VerticalSwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
