@@ -29,4 +29,6 @@
     <string name="pref_key_dns_status" translatable="false">pref_key_dns_status</string>
     <string name="pref_key_homepage_custom" translatable="false">pref_key_homepage_custom</string>
     <string name="pref_key_homepage_code" translatable="false">pref_key_homepage_code</string>
+    <string name="pref_key_homepage_header" translatable="false">pref_key_homepage_header</string>
+    <string name="pref_key_homepage_wallpaper" translatable="false">pref_key_homepage_wallpaper</string>
 </resources>
